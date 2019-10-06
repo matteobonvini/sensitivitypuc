@@ -1,4 +1,4 @@
-#' get_esp_zero
+#' get_eps_zero
 #' 
 #' get_eps_zero computes an estimate of esp_zero and an associated 
 #' confidence interval based on Theorem 4 in manuscript. 
