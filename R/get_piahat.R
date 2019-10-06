@@ -6,22 +6,17 @@
 #' @param a nx1 vector of treatments
 #' @param x nxp matrix of covariates
 #' @param newx qxp matrix of values that the regression estimates are evaluated at
-#' @param method a string specifying the method to use for estimation. Currently
-#' supported is "logistic" and "ranger" (for random forest with ranger package)
+#' @param family Currently allows gaussian or binomial to describe the error 
+#' distribution. It is passed as argument to SL fun, should not contain link.
 #' @param trunc_tol scalar specifying the amount that the predicted values need 
 #' to be truncated by. pihat is in [trunc_tol, 1-trunc_tol]. Default is 0.05.
 #' @export
 
-get_piahat <- function(a, x, newx, method="logistic", trunc_tol=0.05) {
-  dat <- cbind(data.frame(a=as.factor(a)), x)
-  if(method=="logistic"){
-    fit <- glm(a ~ . , data=dat, family=binomial)
-    fitvals <- predict(fit, newdata=as.data.frame(newx), type = "response")
-  }
-  if(method=="ranger"){
-    fit <- ranger::ranger(as.formula(a ~ .), data=dat, probability=TRUE)
-    fitvals <- predict(fit, data=newx)$predictions[, "1"]
-  }
-  fitvals <- truncate_prob(fitvals, tol=trunc_tol)
+get_piahat <- function(a, x, newx, family=binomial(), trunc_tol=0.05,
+                       sl.lib=c("SL.earth","SL.gam","SL.glm",
+                                "SL.glm.interaction","SL.mean", "SL.ranger")) {
+  fit <- SuperLearner::SuperLearner(Y=a, X = x, newX=as.data.frame(newx), 
+                                    SL.library=sl.lib, family=family)
+  fitvals <- truncate_prob(fit$SL.predict, tol=trunc_tol)
   return(fitvals)
 }

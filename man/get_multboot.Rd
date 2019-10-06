@@ -4,7 +4,7 @@
 \alias{get_multboot}
 \title{get_multboot}
 \usage{
-get_multboot(n, psihat, sigmahat, ifvals, alpha = 0.05)
+get_multboot(n, psihat, sigmahat, ifvals, alpha = 0.05, B = 10000)
 }
 \arguments{
 \item{n}{the number of observations}
@@ -16,6 +16,8 @@ get_multboot(n, psihat, sigmahat, ifvals, alpha = 0.05)
 \item{ifvals}{ADD}
 
 \item{alpha}{confidence level (default is 0.05)}
+
+\item{B}{number of rademacher rvs sampled}
 }
 \description{
 get_multboot is the main function to implement the multiplier bootstrap

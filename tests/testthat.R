@@ -1,4 +1,4 @@
 library(testthat)
-library(sensAteBounds)
+# library(sensAteBounds)
 
 test_check("sensAteBounds")

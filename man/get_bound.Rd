@@ -4,8 +4,11 @@
 \alias{get_bound}
 \title{get_bound}
 \usage{
-get_bound(y, a, x, out_model, treat_model, eps = 0, delta = 0,
-  nsplits = 5, do_mult_boot = TRUE)
+get_bound(y, a, x, outfam, treatfam, model = "x", eps = 0, delta = 0,
+  nsplits = 5, do_mult_boot = TRUE, do_eps_zero = TRUE,
+  alpha = 0.05, B = 10000, nuis_fns = NULL, sl.lib = c("SL.earth",
+  "SL.gam", "SL.glm", "SL.mean", "SL.ranger", "SL.glm.interaction"),
+  plugin = FALSE)
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}
@@ -14,11 +17,14 @@ get_bound(y, a, x, out_model, treat_model, eps = 0, delta = 0,
 
 \item{x}{nxp matrix of covariates}
 
-\item{out_model}{a string specifying the outcome model for E(Y|A=a, X)
-currently only "logistic" and "ranger" supported.}
+\item{outfam}{family specifying the error distribution for outcome 
+regression, currently gaussian() or binomial(), should not specify link.}
 
-\item{treat_model}{a string specifying the outcome model for P(A=1| X)
-currently only "logistic" and "ranger" supported.}
+\item{treatfam}{family specifying the error distribution for treatment 
+regression, currently gaussian() or binomial(), should not specify link.}
+
+\item{model}{a string specifying the assumption placed on S when 
+computing the bounds. Currently only "x" and "xa".}
 
 \item{eps}{vector of arbitrary length specifying the values for the 
 proportion of confounding where the lower and upper bounds curves are 
@@ -31,6 +37,23 @@ for the confounded units.}
 
 \item{do_mult_boot}{boolean for whether uniform bands via the multiplier 
 bootstrap need to computed (default is do_mult_boot=TRUE)}
+
+\item{do_eps_zero}{boolean for whether estimate of espilon_zero shoul be
+computed (default is do_eps_zero=TRUE)}
+
+\item{alpha}{confidence level, default is 0.05}
+
+\item{B}{number of simulated radamacher random variables for unif bands.}
+
+\item{nuis_fns}{Optional. A nx4 matrix specifying the estimated regression
+functions evaluated at the observed x, columns should be named: pi0, pi1, 
+mu1, mu0. Default is NULL so that regressions are estimated using the
+SuperLearner via cross-fitting.}
+
+\item{plugin}{boolean for whether the estimator for the bounds is of plug-in
+type (ensuring monotonicity in epsilon): uses g(etahat) rather than its
+estimator based on influence functions when computing term that multiplies 
+the indicator. See manuscript (g(etahat) instead of tauhat).}
 }
 \description{
 get_bound is the main function to estimate the lower and upper bounds curves.

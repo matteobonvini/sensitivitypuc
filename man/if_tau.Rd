@@ -4,7 +4,7 @@
 \alias{if_tau}
 \title{if_tau}
 \usage{
-if_tau(y, a, pi0, pi1, mu0, mu1, upper = FALSE)
+if_tau(y, a, pi0, pi1, mu0, mu1, delta = 1, upper = FALSE)
 }
 \arguments{
 \item{y}{nx1 vector of outcomes in [0, 1]}

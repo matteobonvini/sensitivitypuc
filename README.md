@@ -1,2 +1,2 @@
 # sensAteBounds
-R package to perform the sensitivity analysis by the proportion of unmeasured confounding.
+R package to perform the sensitivity analysis via the proportion of unmeasured confounding.

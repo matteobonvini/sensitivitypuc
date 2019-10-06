@@ -1,36 +1,95 @@
 context("Length of bound")
-library(sensAteBounds)
 
-test_that("length at eps=0 is 0", {
+test_that("length at delta/eps in {0, 1} is {0, 1}", {
+  
+  for(j in 1:10) {
+    n <- 50000
+    y <- rbinom(n, 1, 0.5)
+    a <- rbinom(n, 1, 0.5)
+    x <- as.data.frame(matrix(rnorm(2*n), ncol = 2, nrow = n))
+    
+    res1 <- get_bound(y=y, a=a, x=x, outfam=binomial(), treatfam=binomial(), 
+                      model="x", eps=c(0, 1), delta=c(0, 1), nsplits=1, 
+                      do_mult_boot=FALSE, do_eps_zero=FALSE, alpha=0.05, 
+                      B=NULL, nuis_fns=NULL,  sl.lib=c("SL.glm"))$bounds
+    
+    expect_equal(res1[res1$eps == 0 & res1$delta == 0, "lb"] - 
+                   res1[res1$eps == 0 & res1$delta == 0, "ub"], 0)
+    expect_equal(res1[res1$eps == 1 & res1$delta == 0, "lb"] - 
+                   res1[res1$eps == 1 & res1$delta == 0, "ub"], 0)
+    expect_equal(res1[res1$eps == 0 & res1$delta == 1, "lb"] - 
+                   res1[res1$eps == 0 & res1$delta == 1, "ub"], 0)
+    expect_true(abs(res1[res1$eps == 1 & res1$delta == 1, "ub"] - 
+                      res1[res1$eps == 1 & res1$delta == 1, "lb"] - 1) <= 1e-5)
+    
+    # Check that the same holds if Y is continuous in [0, 1]
+    y2 <- runif(n)
+    res2 <- get_bound(y=y2, a=a, x=x, outfam=gaussian(), treatfam=binomial(), 
+                      model="x", eps=c(0, 1), delta=c(0, 1), nsplits=1, 
+                      do_mult_boot=FALSE, do_eps_zero=FALSE, alpha=0.05, 
+                      B=NULL, nuis_fns=NULL,  sl.lib=c("SL.glm"))$bounds
+    
+    expect_equal(res2[res2$eps == 0 & res2$delta == 0, "lb"] - 
+                   res2[res2$eps == 0 & res2$delta == 0, "ub"], 0)
+    expect_equal(res2[res2$eps == 1 & res2$delta == 0, "lb"] - 
+                   res2[res2$eps == 1 & res2$delta == 0, "ub"], 0)
+    expect_equal(res2[res2$eps == 0 & res2$delta == 1, "lb"] - 
+                   res2[res2$eps == 0 & res2$delta == 1, "ub"], 0)
+    expect_true(abs(res2[res2$eps == 1 & res2$delta == 1, "ub"] - 
+                     res2[res2$eps == 1 & res2$delta == 1, "lb"] - 1) <= 1e-4)
+  }
+})
+
+test_that("width of bounds always in [0, 1]", {
+  
+  for(j in 1:10) {
+    n <- 5000
+    y <- rbinom(n, 1, 0.5)
+    a <- rbinom(n, 1, 0.5)
+    x <- as.data.frame(matrix(rnorm(2*n), ncol = 2, nrow = n))
+    
+    res1 <- get_bound(y=y, a=a, x=x, outfam=binomial(), treatfam=binomial(), 
+                      model="x", eps=seq(0, 1, 0.01), delta=c(0, 1), nsplits=1, 
+                      do_mult_boot=FALSE, do_eps_zero=FALSE, alpha=0.05, 
+                      B=NULL, nuis_fns=NULL,  sl.lib=c("SL.glm"))$bounds
+    length_bounds <- res1[, "ub"] - res1[, "lb"]
+    expect_true(all(0 <= length_bounds & length_bounds <= 1))
+    
+    # Check that the same holds if Y is continuous in [0, 1]
+    y2 <- runif(n)
+    res2 <- get_bound(y=y2, a=a, x=x, outfam=gaussian(), treatfam=binomial(), 
+                      model="x", eps=seq(0, 1, 0.01), delta=c(0, 1), nsplits=1, 
+                      do_mult_boot=FALSE, do_eps_zero=FALSE, alpha=0.05, 
+                      B=NULL, nuis_fns=NULL,  sl.lib=c("SL.glm"))$bounds
+    length_bounds2 <- res2[, "ub"] - res2[, "lb"]
+    expect_true(all(0 <= length_bounds2 & length_bounds2 <= 1))
+  }
+})
+
+test_that("width is increasing in epsilon (using plug-in estimator)", {
+  
   for(j in 1:10) {
     n <- 500
-    y <- rbinom(n,1,0.5)
+    y <- rbinom(n, 1, 0.5)
+    a <- rbinom(n, 1, 0.5)
+    x <- as.data.frame(matrix(rnorm(2*n), ncol = 2, nrow = n))
+    
+    res1 <- get_bound(y=y, a=a, x=x, outfam=binomial(), treatfam=binomial(), 
+                      model="x", eps=seq(0, 1, 0.001), delta=1, nsplits=1, 
+                      do_mult_boot=FALSE, do_eps_zero=FALSE, alpha=0.05, 
+                      B=NULL, nuis_fns=NULL,  sl.lib=c("SL.glm"), 
+                      plugin=TRUE)$bounds
+    length_bounds <- res1[, "ub"] - res1[, "lb"]
+    expect_true(all(diff(length_bounds, 1) >= 0))
+    
+    # Check that the same holds if Y is continuous in [0, 1]
     y2 <- runif(n)
-    a <- rbinom(n,1,0.5)
-    x <- as.data.frame(matrix(rnorm(2*n), ncol=2, nrow=n))
-    res1 <- get_bound(y=y, a=a, x=x, out_model="logistic", treat_model="logistic",
-                      eps=c(0,1), delta=0, nsplits=2, do_mult_boot=FALSE)$bounds
-    res2 <- get_bound(y=y, a=a, x=x, out_model="ranger", treat_model="ranger",
-                      eps=c(0,1), delta=0, nsplits=2, do_mult_boot=FALSE)$bounds
-    res3 <- get_bound(y=y2, a=a, x=x, out_model="ranger", treat_model="ranger",
-                      eps=c(0,1), delta=0, nsplits=2, do_mult_boot=FALSE)$bounds
-    res4 <- get_bound(y=y, a=a, x=x, out_model="logistic", treat_model="logistic",
-                      eps=seq(0, 1, length.out=100), delta=0, nsplits=2, 
-                      do_mult_boot=FALSE)$bounds
-    res5 <- get_bound(y=y2, a=a, x=x, out_model="ranger", treat_model="ranger",
-                      eps=seq(0, 1, length.out=100), delta=0, nsplits=2, 
-                      do_mult_boot=FALSE)$bounds
-    expect_equal(res1[1, "lb"] - res1[1, "ub"], 0)
-    expect_equal(res1[2, "ub"] - res1[2, "lb"], 1)
-    expect_equal(res2[1, "lb"] - res2[1, "ub"], 0)
-    expect_equal(res2[2, "ub"] - res2[2, "lb"], 1)
-    expect_equal(res3[1, "lb"] - res3[1, "ub"], 0)
-    expect_equal(res3[2, "ub"] - res3[2, "lb"], 1)
-    expect_true(all(res4[, "lb"] <= res4[, "ub"]))
-    expect_true(all(res5[, "lb"] <= res5[, "ub"]))
-    expect_true(all(-1 <= res4[, "lb"] & res4[, "lb"] <= 1))
-    expect_true(all(-1 <= res5[, "lb"] & res5[, "lb"] <= 1))
-    expect_true(all(-1 <= res4[, "ub"] & res4[, "ub"] <= 1))
-    expect_true(all(-1 <= res5[, "ub"] & res5[, "ub"] <= 1))
+    res2 <- get_bound(y=y2, a=a, x=x, outfam=gaussian(), treatfam=binomial(), 
+                      model="x", eps=seq(0, 1, 0.001), delta=1, nsplits=1, 
+                      do_mult_boot=FALSE, do_eps_zero=FALSE, alpha=0.05, 
+                      B=NULL, nuis_fns=NULL,  sl.lib=c("SL.glm"),
+                      plugin=TRUE)$bounds
+    length_bounds2 <- res2[, "ub"] - res2[, "lb"]
+    expect_true(all(diff(length_bounds2, 1) >= 0))
   }
 })

@@ -17,29 +17,43 @@
 #' Each column of the matrix represents the vector of values for a specific 
 #' value of delta, the maximum bias allowed for the confounded units. See 
 #' manuscript. 
+#' @export
 get_ifvals <- function(eps, upper, nu, tau, ghatmat) {
   
+  # sample size
   n <- nrow(nu)
   neps <- ceiling(n*eps)
+  
+  # order the value of g(eta) increasingly so that it's easier to get term like
+  # E(g I( g <= q_tau)) for q_tau being tau-quantile of g(eta).
   ghatorder <- apply(ghatmat, 2, order)
   ndelta <- ncol(ghatmat)
   ghat <- sapply(1:ndelta, function(x) { ghatmat[ghatorder[, x], x] } )
-  qhats <- matrix(NA, nrow=length(eps), ncol=ndelta)
+  .get_q <- Vectorize(function(delta) {
+    if(upper){
+      quant_eps <- 1-eps
+    } else{
+      quant_eps <- eps
+    }
+    out <- quantile(ghatmat[, which(colnames(ghatmat) == delta)], p = quant_eps)
+    return(out)
+  })
+  qhats <- .get_q(colnames(ghatmat))
+  
   if(upper) { 
-    qhats[which(n!=neps), ] <- ghat[n-neps, ]
-    qhats[which(n==neps), ] <- ghat[1, ] - 0.01
     lambdahat <- do.call(cbind, lapply(neps, function(x) { c(rep(0, n-x), rep(1, x)) }))
     
   } else {
-    qhats[which(neps!=0), ] <- ghat[neps, ]
-    qhats[which(neps==0), ] <- ghat[1, ] - 0.01
-    lambdahat <- do.call(cbind, lapply(neps, function(u) { c(rep(1, u), rep(0, n-u)) }))
+    lambdahat <- do.call(cbind, lapply(neps, function(x) { c(rep(1, x), rep(0, n-x)) }))
   }
-  nuorder <- unlist(lapply(1:ndelta, function(x) { nu[ghatorder[, x]] } ))
+  nuorder <- sapply(1:ndelta, function(x) { nu[ghatorder[, x]] } )
   if_gorder <- sapply(1:ndelta, function(x) { tau[ghatorder[, x], x] } )
-  ifvals <- sweep(sweep(lambdahat, 1, if_gorder[, 1], "*"), 1, nuorder, "+")
-  ifvals <- cbind(unlist(lapply(1:ndelta, function(x) { rep(x, n) } )), ifvals)
-  colnames(ifvals) <- c("delta", eps)
+  ifvals <- sapply(1:ndelta, function(x) { 
+    sweep(lambdahat, 1, if_gorder[, x], "*") + nuorder[, x] })
+  colnames(ifvals) <- colnames(ghatmat)
+  ifvals <- cbind(unlist(lapply(1:length(eps), function(x) { rep(eps[x], n) } )), 
+                  ifvals)
+  colnames(ifvals) <- c("eps", colnames(ghatmat))
   
   out <- list(ifvals=ifvals, lambda=lambdahat, quant=as.matrix(qhats))
   return(out)

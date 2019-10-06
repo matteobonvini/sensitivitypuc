@@ -4,7 +4,9 @@
 \alias{get_piahat}
 \title{get_piahat}
 \usage{
-get_piahat(a, x, newx, method = "logistic", trunc_tol = 0.05)
+get_piahat(a, x, newx, family = binomial(), trunc_tol = 0.05,
+  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.glm.interaction",
+  "SL.mean", "SL.ranger"))
 }
 \arguments{
 \item{a}{nx1 vector of treatments}
@@ -13,8 +15,8 @@ get_piahat(a, x, newx, method = "logistic", trunc_tol = 0.05)
 
 \item{newx}{qxp matrix of values that the regression estimates are evaluated at}
 
-\item{method}{a string specifying the method to use for estimation. Currently
-supported is "logistic" and "ranger" (for random forest with ranger package)}
+\item{family}{Currently allows gaussian or binomial to describe the error 
+distribution. It is passed as argument to SL fun, should not contain link.}
 
 \item{trunc_tol}{scalar specifying the amount that the predicted values need 
 to be truncated by. pihat is in [trunc_tol, 1-trunc_tol]. Default is 0.05.}
