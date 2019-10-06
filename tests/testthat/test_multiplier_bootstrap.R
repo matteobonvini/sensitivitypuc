@@ -65,10 +65,9 @@ test_that("uniform coverage is correct", {
   calpha_ub <- sims[1, "calpha_ub", ]
   expect_true(all(calpha_ub >= qnorm(1-alpha/2)))
   
-  # Check uniform coverage is okay
+  # Check uniform coverage (%) is okay
   cvg <- coverage(sims[, "ci_lo", ], sims[, "ci_hi", ], 
                   psil, psiu)
-  # Both coverage and bias are expressed in %
   expect_true(abs(cvg - 100*(1-alpha)) <= 5)
 })
 

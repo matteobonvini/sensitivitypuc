@@ -1,6 +1,6 @@
 context("Epsilon 0")
 
-test_that("coverage esp0 is correct", {
+test_that("coverage eps0 is correct", {
   
   require(pbapply)
   require(uniftest)
