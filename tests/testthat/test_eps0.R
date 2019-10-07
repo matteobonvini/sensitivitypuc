@@ -17,8 +17,8 @@ test_that("coverage eps0 is correct", {
   eps0_true <- 0.5*(4 - sqrt(8))
   
   # Start simulation to check coverage
-  nsim <- 1000
-  n <- 5000
+  nsim <- 500
+  n <- 10000
   alpha <- 0.2
   
   sim_fn <- function() {
@@ -51,29 +51,26 @@ test_that("coverage eps0 is correct", {
     tildephi0 <- (phiu0 - (1-eps0_true/2)*I( gx > (1-eps0_true/2))) * psil0  
     var_eps0 <- (psil0*(1-eps0_true/2))^(-2) * var(tildephi0)
     
-    temp <- get_bound(y=y, a=a, x=as.data.frame(x), 
+    tmp <- get_bound(y=y, a=a, x=as.data.frame(x), 
                       outfam=NULL, treatfam=NULL, model="x", 
                       eps=eps, delta=1, nsplits=NULL, do_mult_boot=FALSE, 
-                      do_eps_zero=TRUE, nuis_fns=nuis_fns, alpha=alpha)
+                      do_eps_zero=TRUE, nuis_fns=nuis_fns, alpha=alpha)$eps_zero
+    out <- c(tmp$est, tmp$ci_lo, tmp$ci_hi, var_eps0)
+    names(out) <-  c("eps0", "eps0_lo", "eps0_hi", "var0")
     
-    out <- matrix(c(temp$bounds$eps_zero[1:2], temp$bounds$eps_zero_lo[1:2], 
-                    temp$bounds$eps_zero_hi[1:2], rep(var_eps0, 2)), 
-                  ncol=4, nrow=2,
-                  dimnames=list(NULL, c("eps0", "eps0_lo", "eps0_hi", "var0")))
     return(out)
   }
   # Simulation begins
   sims <- pbreplicate(nsim, sim_fn())
-  cvg <- coverage(sims[, "eps0_lo", ], sims[, "eps0_hi", ], 
-                  rep(eps0_true, 2), rep(eps0_true, 2))
-  eps0 <- sims[1, "eps0", ]
-  bias0 <- bias(sims[, "eps0", ], rep(eps0_true, 2))
-  var0 <- mean(apply(sims[, "var0", ], 2, mean))
+  cvg <- coverage(sims["eps0_lo", ], sims["eps0_hi", ], eps0_true, eps0_true)
+  eps0 <- sims["eps0", ]
+  bias0 <- bias(sims["eps0", ], eps0_true)
+  var0 <- mean(sims["var0", ])
   pvs <- pnorm(sqrt(n)*(eps0 - eps0_true) / sqrt(var0))
   # Both coverage and bias are expressed in %
   expect_true(abs(cvg - 100*(1-alpha)) <= 5)
   expect_true(bias0 <= 1)
-  # If distribution of esp0 is correct, then we would expect pvs to be unif
+  # If distribution of eps0 is correct, then we would expect pvs to be unif
   expect_true(frosini.unif.test(pvs)$p.value > 0.05)
 })
 

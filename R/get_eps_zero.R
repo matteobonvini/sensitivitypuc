@@ -22,20 +22,18 @@ get_eps_zero <- function(n, eps, lb, ub, ql, qu, ifvals_lb, ifvals_ub,
                          delta, alpha=0.05){
   
   idx <- which.min(abs(lb*ub))
-  eps_zero <- eps[idx]
+  est <- eps[idx]
   lb_zero <- lb[idx]
   ub_zero <- ub[idx]
   ql_zero <- ql[idx]
   qu_zero <- qu[idx]
-  phi_zero <- ub_zero*ifvals_lb[which(ifvals_lb$eps==eps_zero), "ifvals"] +
-              lb_zero*ifvals_ub[which(ifvals_ub$eps==eps_zero), "ifvals"]
+  phi_zero <- ub_zero*ifvals_lb[which(ifvals_lb$eps==est), "ifvals"] +
+              lb_zero*ifvals_ub[which(ifvals_ub$eps==est), "ifvals"]
   se_eps_zero <- sqrt((ub_zero*ql_zero + lb_zero*qu_zero)^(-2)*var(phi_zero)/n)
-  eps_zero_lo <- eps_zero + qnorm(alpha/2)*se_eps_zero
-  eps_zero_hi <- eps_zero + qnorm(1-alpha/2)*se_eps_zero
-  out <- data.frame(eps=eps)
-  out$delta <- delta
-  out$eps_zero <- eps_zero
-  out$eps_zero_lo <- eps_zero_lo
-  out$eps_zero_hi <- eps_zero_hi
+  ci <- get_ci(est, se_eps_zero, qnorm(1-alpha/2))
+  out <- data.frame(delta = delta)
+  out$est <- est
+  out$ci_lo <- ci[, 1]
+  out$ci_hi <- ci[, 2]
   return(out)
 }

@@ -8,9 +8,12 @@ bias(simmat, truth)
 }
 \arguments{
 \item{simmat}{a n x nsim matrix, where n is the number of epsilon points used
-in evaluation and nsim is the number of simulations}
+in evaluation and nsim is the number of simulations. If it is a nsim-dim 
+vector, the length is interpreted as the number of simulations of a scalar
+quantity.}
 
-\item{truth}{a n x 1 vector containing the true values for the curve}
+\item{truth}{a n x 1 vector containing the true values for the curve.
+If simmat is a vector, truth must be scalar.}
 }
 \description{
 bias computes the bias, see Section 5 for definition

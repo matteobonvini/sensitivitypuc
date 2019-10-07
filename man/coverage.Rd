@@ -8,14 +8,20 @@ coverage(lo, hi, truth_lo, truth_hi)
 }
 \arguments{
 \item{lo}{a n x nsim matrix, where n is the number of epsilon points used
-in evaluation and nsim is the number of simulations (generally lb)}
+in evaluation and nsim is the number of simulations (generally lb)
+If it is a nsim-dim vector, the length is interpreted as the number of 
+simulations of a scalar quantity.}
 
 \item{hi}{a n x nsim matrix, where n is the number of epsilon points used
-in evaluation and nsim is the number of simulations (generally ub)}
+in evaluation and nsim is the number of simulations (generally ub)
+If it is a nsim-dim vector, the length is interpreted as the number of 
+simulations of a scalar quantity.}
 
-\item{truth_lo}{a n x 1 vector containing the true values for the curve (lb)}
+\item{truth_lo}{a n x 1 vector containing the true values for the curve (lb)
+If lo is a vector, truth_lo must be scalar.}
 
-\item{truth_hi}{a n x 1 vector containing the true values for the curve (ub)}
+\item{truth_hi}{a n x 1 vector containing the true values for the curve (ub)
+If hi is a vector, truth_hi must be scalar.}
 }
 \description{
 coverage computes the frequentist coverage

@@ -15,8 +15,8 @@
 get_piahat <- function(a, x, newx, family=binomial(), trunc_tol=0.05,
                        sl.lib=c("SL.earth","SL.gam","SL.glm",
                                 "SL.glm.interaction","SL.mean", "SL.ranger")) {
-  fit <- SuperLearner::SuperLearner(Y=a, X = x, newX=as.data.frame(newx), 
-                                    SL.library=sl.lib, family=family)
+  fit <- SuperLearner::SuperLearner(Y=a, X = x, newX = as.data.frame(newx),
+                                    SL.library = sl.lib, family = family)
   fitvals <- truncate_prob(fit$SL.predict, tol=trunc_tol)
   return(fitvals)
 }

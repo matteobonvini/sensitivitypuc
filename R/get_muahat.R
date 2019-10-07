@@ -18,8 +18,8 @@ get_muahat <- function(y, a, x, newx, aval, trunc_tol=0, family=gaussian(),
                        sl.lib=c("SL.earth","SL.gam","SL.glm",
                                 "SL.glm.interaction","SL.mean", "SL.ranger")) {
   fit <- SuperLearner::SuperLearner(Y=y[a==aval], X=x[a==aval, ,drop=FALSE], 
-                                    family=family, newX=as.data.frame(newx), 
-                                    SL.library=sl.lib)
+                                    newX = as.data.frame(newx), 
+                                    family=family, SL.library=sl.lib)
   fitvals <- truncate_prob(fit$SL.predict, tol=trunc_tol)
   return(fitvals)
 }

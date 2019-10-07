@@ -31,7 +31,8 @@ proportion of confounding where the lower and upper bounds curves are
 evaluated.}
 
 \item{delta}{vector of arbitrary length specifying the maximum bias allowed
-for the confounded units.}
+for the confounded units. If delta is not equal to 1, then we use a plug-in
+estimator.}
 
 \item{nsplits}{number of splits for the cross-fitting (default=5)}
 

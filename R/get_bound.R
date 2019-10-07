@@ -14,10 +14,12 @@
 #' proportion of confounding where the lower and upper bounds curves are 
 #' evaluated.
 #' @param delta vector of arbitrary length specifying the maximum bias allowed
-#' for the confounded units.
+#' for the confounded units. If delta is not equal to 1, then we use a plug-in
+#' estimator. 
 #' @param nsplits number of splits for the cross-fitting (default=5)
 #' @param do_mult_boot boolean for whether uniform bands via the multiplier 
-#' bootstrap need to computed (default is do_mult_boot=TRUE)
+#' bootstrap need to computed. Default is do_mult_boot=TRUE if delta = 1. If 
+#' delta is not equal to 1, then pointwise coverage of the curves is computed. 
 #' @param do_eps_zero boolean for whether estimate of espilon_zero shoul be
 #' computed (default is do_eps_zero=TRUE)
 #' @param alpha confidence level, default is 0.05
@@ -87,7 +89,7 @@ get_bound <- function(y, a, x, outfam, treatfam, model="x", eps=0, delta=0,
   guhat <- .get_g(delta, upper = TRUE)
   colnames(glhat) <- colnames(guhat) <- delta
   
-  if(!plugin) {
+  if(!plugin & (length(delta)==1) && (delta==1)) {
   tauhat_lb <- if_tau(y=y, a=a, pi0=pi0hat, pi1=pi1hat, mu0=mu0hat,
                       mu1=mu1hat, delta=delta, upper=FALSE)
   tauhat_ub <- if_tau(y=y, a=a, pi0=pi0hat, pi1=pi1hat, mu0=mu0hat,
@@ -99,9 +101,9 @@ get_bound <- function(y, a, x, outfam, treatfam, model="x", eps=0, delta=0,
   colnames(tauhat_lb) <- colnames(tauhat_ub) <- delta
   
   list_lb <- get_ifvals(eps=eps, upper=FALSE, nu=nuhat, tau=tauhat_lb,
-  ghatmat=glhat)
+                        ghatmat=glhat)
   list_ub <- get_ifvals(eps=eps, upper=TRUE, nu=nuhat, tau=tauhat_ub,
-  ghatmat=guhat)
+                        ghatmat=guhat)
   
   lambdaq_lb <- do.call(rbind, lapply(1:ndelta, function(x) { 
     cbind(sweep(list_lb$lambda, 2, list_lb$quant[, x], "*"), delta[x]) }))
@@ -184,12 +186,10 @@ get_bound <- function(y, a, x, outfam, treatfam, model="x", eps=0, delta=0,
                     ci_lo_ptwise=ci_lb_ptwise[, 1],
                     ci_hi_ptwise=ci_ub_ptwise[, 2],
                     ci_lo_ptwise_im04=ci_ptwise_im04[, 1],
-                    ci_hi_ptwise_im04=ci_ptwise_im04[, 2],
-                    eps_zero=eps_list$eps_zero,
-                    eps_zero_lo=eps_list$eps_zero_lo,
-                    eps_zero_hi=eps_list$eps_zero_hi)
+                    ci_hi_ptwise_im04=ci_ptwise_im04[, 2])
   
   out <- list(bounds=res, var_ub=ub_var, var_lb=lb_var,
+              eps_zero=eps_list, 
               ifvals_lb=list_lb$ifvals, ifvals_ub=list_ub$ifvals,
               mu0hat=mu0hat, mu1hat=mu1hat, pi0hat=pi0hat, pi1hat=pi1hat,
               nuhat=nuhat, glhat=glhat, guhat=guhat, tauhat_l=tauhat_lb,
