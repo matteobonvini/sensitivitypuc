@@ -4,12 +4,15 @@
 \alias{get_ifvals}
 \title{get_ifvals}
 \usage{
-get_ifvals(eps, upper, nu, tau, ghatmat)
+get_ifvals(eps, delta, upper, nu, tau, ghatmat)
 }
 \arguments{
 \item{eps}{vector of arbitrary length specifying the values for the 
 proportion of confounding where the lower and upper bounds curves are 
 evaluated.}
+
+\item{delta}{vector of delta values specifying the extent of unmeasured
+confounding among S = 0 units, see manuscript.}
 
 \item{upper}{boolean for whether the upper or the lower bound curve needs to
 be computed.}

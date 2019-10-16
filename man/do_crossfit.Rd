@@ -4,9 +4,9 @@
 \alias{do_crossfit}
 \title{do_crossfit}
 \usage{
-do_crossfit(y, a, x, outfam = gaussian(), treatfam = binomial(),
-  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.mean", "SL.ranger",
-  "SL.glm.interaction"), nsplits = 5)
+do_crossfit(y, a, x, ymin, ymax, outfam = gaussian(),
+  treatfam = binomial(), nsplits = 5, sl.lib = c("SL.earth",
+  "SL.gam", "SL.glm", "SL.mean", "SL.ranger", "SL.glm.interaction"))
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}
@@ -21,9 +21,9 @@ regression, currently gaussian() or binomial(), should not specify link.}
 \item{treatfam}{family specifying the error distribution for treatment 
 regression, currently gaussian() or binomial(), should not specify link.}
 
-\item{sl.lib}{vector specifying which libraries to use for the SL.}
-
 \item{nsplits}{number of splits for the cross-fitting.}
+
+\item{sl.lib}{vector specifying which libraries to use for the SL.}
 }
 \description{
 do_crossfit estimates the nuisance regression functions via cross-fitting.

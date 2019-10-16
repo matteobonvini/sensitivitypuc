@@ -4,11 +4,11 @@
 \alias{get_bound}
 \title{get_bound}
 \usage{
-get_bound(y, a, x, outfam, treatfam, model = "x", eps = 0, delta = 0,
-  nsplits = 5, do_mult_boot = TRUE, do_eps_zero = TRUE,
-  alpha = 0.05, B = 10000, nuis_fns = NULL, sl.lib = c("SL.earth",
-  "SL.gam", "SL.glm", "SL.mean", "SL.ranger", "SL.glm.interaction"),
-  plugin = FALSE)
+get_bound(y, a, x, ymin, ymax, outfam, treatfam, model = "x", eps = 0,
+  delta = 0, nsplits = 5, do_mult_boot = TRUE, do_eps_zero = TRUE,
+  alpha = 0.05, B = 10000, nuis_fns = NULL, plugin = FALSE,
+  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.mean", "SL.ranger",
+  "SL.glm.interaction"))
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}
@@ -16,6 +16,10 @@ get_bound(y, a, x, outfam, treatfam, model = "x", eps = 0, delta = 0,
 \item{a}{nx1 treatment received vector}
 
 \item{x}{nxp matrix of covariates}
+
+\item{ymin}{infimum of the support of y}
+
+\item{ymax}{supremum of the support of y}
 
 \item{outfam}{family specifying the error distribution for outcome 
 regression, currently gaussian() or binomial(), should not specify link.}
@@ -37,7 +41,8 @@ estimator.}
 \item{nsplits}{number of splits for the cross-fitting (default=5)}
 
 \item{do_mult_boot}{boolean for whether uniform bands via the multiplier 
-bootstrap need to computed (default is do_mult_boot=TRUE)}
+bootstrap need to computed. Default is do_mult_boot=TRUE if delta = 1. If 
+delta is not equal to 1, then pointwise coverage of the curves is computed.}
 
 \item{do_eps_zero}{boolean for whether estimate of espilon_zero shoul be
 computed (default is do_eps_zero=TRUE)}

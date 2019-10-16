@@ -15,9 +15,10 @@
 #' @param nsplits number of splits for the cross-fitting.
 #' @export
 
-do_crossfit <- function(y, a, x, outfam=gaussian(), treatfam=binomial(),
+do_crossfit <- function(y, a, x, ymin, ymax, outfam = gaussian(), 
+                        treatfam = binomial(), nsplits = 5,
                         sl.lib=c("SL.earth","SL.gam","SL.glm", "SL.mean", 
-                                 "SL.ranger","SL.glm.interaction"), nsplits=5) {
+                                 "SL.ranger","SL.glm.interaction")) {
   n <- length(y)
   s <- sample(rep(1:nsplits, ceiling(n/nsplits))[1:n])
   mu0hat <- mu1hat <- pi0hat <- pi1hat <- rep(NA, n)
@@ -36,12 +37,14 @@ do_crossfit <- function(y, a, x, outfam=gaussian(), treatfam=binomial(),
     xtest <- x[test, , drop=FALSE]
     
     mu0hat[test] <- get_muahat(y=ytrain, a=atrain, x=xtrain, newx=xtest, aval=0,
-                               sl.lib=sl.lib, family=outfam)
+                               sl.lib=sl.lib, family=outfam, ymin = ymin, 
+                               ymax = ymax)
     mu1hat[test] <- get_muahat(y=ytrain, a=atrain, x=xtrain, newx=xtest, aval=1,
-                               sl.lib=sl.lib, family=outfam)
+                               sl.lib=sl.lib, family=outfam, ymin = ymin, 
+                               ymax = ymax)
     pi1hat[test] <- get_piahat(a=atrain, x=xtrain, newx=xtest, sl.lib=sl.lib,
                                family=treatfam)
-    pi0hat[test] <- 1-pi1hat[test]
+    pi0hat[test] <- 1 - pi1hat[test]
   } 
   out <- matrix(c(mu0hat, mu1hat, pi0hat, pi1hat), ncol=4, nrow=n, byrow=FALSE,
                 dimnames=list(NULL, c("mu0", "mu1", "pi0", "pi1")))

@@ -5,8 +5,8 @@
 \title{get_piahat}
 \usage{
 get_piahat(a, x, newx, family = binomial(), trunc_tol = 0.05,
-  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.glm.interaction",
-  "SL.mean", "SL.ranger"))
+  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.mean",
+  "SL.glm.interaction", "SL.ranger"))
 }
 \arguments{
 \item{a}{nx1 vector of treatments}

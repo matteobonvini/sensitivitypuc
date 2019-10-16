@@ -8,18 +8,36 @@
 #' @param x nxp matrix of covariates
 #' @param newx qxp matrix of values that the regression estimates are evaluated at
 #' @param aval Scalar specifying which regression to estimate E(Y|A=aval,X=x)
+#' @param ymin infimum of the support of y (predictions will be >= ymin)
+#' @param ymax supremum of the support of y (predictions will be <= ymax)
 #' @param family Currently allows gaussian or binomial to describe the error 
 #' distribution. It is passed as argument to SL fun, should not contain link.
-#' @param trunc_tol Scalar specifying the amount that the predicted values need 
-#' to be truncated by. Yhat is in [trunc_tol, 1-trunc_tol]. Default is 0.
 #' @export
 
-get_muahat <- function(y, a, x, newx, aval, trunc_tol=0, family=gaussian(),
-                       sl.lib=c("SL.earth","SL.gam","SL.glm",
-                                "SL.glm.interaction","SL.mean", "SL.ranger")) {
-  fit <- SuperLearner::SuperLearner(Y=y[a==aval], X=x[a==aval, ,drop=FALSE], 
-                                    newX = as.data.frame(newx), 
-                                    family=family, SL.library=sl.lib)
-  fitvals <- truncate_prob(fit$SL.predict, tol=trunc_tol)
+get_muahat <- function(y, a, x, newx, aval, ymin, ymax, family = gaussian(), 
+                       sl.lib = c("SL.earth","SL.gam","SL.glm", "SL.ranger",
+                                  "SL.glm.interaction","SL.mean")) {
+  y_aval <- y[a == aval]
+  x_aval <- x[a == aval, , drop = FALSE]
+  
+  tried <- try(SuperLearner::SuperLearner(Y = y_aval, X = x_aval, family = family, 
+                                          newX = as.data.frame(newx), SL.library = sl.lib)$SL.predict,
+               silent = TRUE)
+  if(inherits(tried, "try-error")) {
+    message("SuperLearner throws this error:")
+    message(tried[1])
+    message(paste("\n I will use a GLM instead! Consider fitting nuisance", 
+                  "regression functions separately and then pass them as",
+                  "arg to get_bound()"))
+    dat <- cbind(data.frame(y = y_aval), x_aval)
+    fitvals <- predict.glm(glm(y ~ ., data = dat, family = family), 
+                           newdata = as.data.frame(newx))
+  } else {
+    fitvals <- tried
+  }
+  
+  fitvals[which(fitvals < ymin)] <- ymin
+  fitvals[which(fitvals > ymax)] <- ymax
+  
   return(fitvals)
 }

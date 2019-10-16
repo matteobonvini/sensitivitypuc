@@ -19,21 +19,27 @@
 
 
 get_eps_zero <- function(n, eps, lb, ub, ql, qu, ifvals_lb, ifvals_ub, 
-                         delta, alpha=0.05){
+                         delta, alpha = 0.05) {
   
-  idx <- which.min(abs(lb*ub))
+  find_zero <- function(x) { which.min(abs(x)) }
+  idx <- apply(lb * ub, 2, find_zero)
+  ndelta <- length(delta)
   est <- eps[idx]
-  lb_zero <- lb[idx]
-  ub_zero <- ub[idx]
-  ql_zero <- ql[idx]
-  qu_zero <- qu[idx]
-  phi_zero <- ub_zero*ifvals_lb[which(ifvals_lb$eps==est), "ifvals"] +
-              lb_zero*ifvals_ub[which(ifvals_ub$eps==est), "ifvals"]
-  se_eps_zero <- sqrt((ub_zero*ql_zero + lb_zero*qu_zero)^(-2)*var(phi_zero)/n)
+  lb_zero <- diag(as.matrix(lb[idx, ]))
+  ub_zero <- diag(as.matrix(ub[idx, ]))
+  ql_zero <- diag(as.matrix(ql[idx, ]))
+  qu_zero <- diag(as.matrix(qu[idx, ]))
+
+  if_l <-  sapply(1:ndelta, function(x) { ifvals_lb[, idx[x], x] } )
+  if_u <-  sapply(1:ndelta, function(x) { ifvals_ub[, idx[x], x] } )
+  
+  phi_zero <- sweep(if_l, 2, ub_zero, "*") + sweep(if_u, 2, lb_zero, "*")
+  der <- (ub_zero*ql_zero + lb_zero*qu_zero)^(-2)
+  vars <- apply(phi_zero, 2, var) / n
+  se_eps_zero <- sqrt(der * vars)
+  
   ci <- get_ci(est, se_eps_zero, qnorm(1-alpha/2))
-  out <- data.frame(delta = delta)
-  out$est <- est
-  out$ci_lo <- ci[, 1]
-  out$ci_hi <- ci[, 2]
+  
+  out <- data.frame(delta = delta, est = est, ci_lo = ci[, 1], ci_hi = ci[, 2])
   return(out)
 }

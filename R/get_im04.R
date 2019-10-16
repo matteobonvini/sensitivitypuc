@@ -9,12 +9,16 @@
 #' @param alpha desired significance level
 #' @export 
 
-get_im04 <- Vectorize(function(n, lb, ub, sigma_l, sigma_u, alpha) {
+get_im04 <- function(dat, n, alpha) {
+  lb <- dat[1]
+  ub <- dat[2] 
+  sigma_l <- dat[3] 
+  sigma_u <- dat[4] 
   imfn <- function(x) {
     out <- pnorm(x + sqrt(n)*(ub-lb)/max(sigma_l, sigma_u)) - pnorm(-x) - 
       (1-alpha)
     return(out)
   }
-  calpha <- uniroot(f = imfn, interval = c(0, 5))$root
+  calpha <- uniroot(f = imfn, interval = c(0, 5), tol = .Machine$double.eps)$root
   return(calpha)
-}, c("lb", "ub", "sigma_l", "sigma_u"))
+}

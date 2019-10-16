@@ -46,15 +46,16 @@ test_that("coverage eps0 is correct", {
     muax <- a*mu1x + (1-a)*mu0x
     nu <- (2*a-1) * (y-muax) / piax + mu1x - mu0x 
     tau <- (1-2*a) * (y-muax) / piax * (1-piax) + a*mu0x + (1-a)*(1-mu1x)
-    phiu0 <- nu + tau * I( gx > (1-eps0_true/2))  
-    psil0 <- 0.25*(eps0_true^2-2*eps0_true-2)
-    tildephi0 <- (phiu0 - (1-eps0_true/2)*I( gx > (1-eps0_true/2))) * psil0  
-    var_eps0 <- (psil0*(1-eps0_true/2))^(-2) * var(tildephi0)
+    phiu0 <- nu + tau * I( gx > (1 - eps0_true/2))  
+    psil0 <- 0.25 * (eps0_true^2 - 2 * eps0_true - 2)
+    tildephi0 <- (phiu0 - (1 - eps0_true/2)*I( gx > (1 - eps0_true/2)))  
+    var_eps0 <- (psil0 * (1 - eps0_true/2))^(-2) * var(tildephi0 * psil0)
     
-    tmp <- get_bound(y=y, a=a, x=as.data.frame(x), 
-                      outfam=NULL, treatfam=NULL, model="x", 
-                      eps=eps, delta=1, nsplits=NULL, do_mult_boot=FALSE, 
-                      do_eps_zero=TRUE, nuis_fns=nuis_fns, alpha=alpha)$eps_zero
+    tmp <- get_bound(y = y, a = a, x = as.data.frame(x), ymin = 0, ymax = 1, 
+                     outfam = NULL, treatfam = NULL, model = "x", 
+                     eps = eps, delta = 1, nsplits = NULL, do_mult_boot = FALSE, 
+                     do_eps_zero = TRUE, nuis_fns = nuis_fns, alpha = alpha)
+    tmp <- tmp$eps_zero
     out <- c(tmp$est, tmp$ci_lo, tmp$ci_hi, var_eps0)
     names(out) <-  c("eps0", "eps0_lo", "eps0_hi", "var0")
     

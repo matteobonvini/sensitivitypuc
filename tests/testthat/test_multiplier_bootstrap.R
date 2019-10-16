@@ -16,7 +16,7 @@ test_that("uniform coverage is correct", {
   
   # Start simulation to check coverage
   nsim <- 500
-  n <- 1000
+  n <- 10000
   alpha <- 0.2
   
   psiu <- -0.25*(eps^2 - 4*eps + 2)
@@ -33,41 +33,41 @@ test_that("uniform coverage is correct", {
     mu1x <- x
     mu0x <- rep(1, n)
     pi1x <- pi0x <- rep(0.5, n)
-    nuis_fns <- matrix(NA, ncol=4, nrow=n,
-                       dimnames=list(NULL, c("mu1", "mu0", "pi1", "pi0")))
+    cnames <- c("mu1", "mu0", "pi1", "pi0")
+    nuis_fns <- matrix(NA, ncol = 4, nrow = n, dimnames = list(NULL, cnames))
     nuis_fns[, "mu1"] <- mu1x
     nuis_fns[, "mu0"] <- mu0x
     nuis_fns[, "pi1"] <- pi1x
     nuis_fns[, "pi0"] <- pi0x
     gx <- 1 - 0.5*x
     
-    temp <- get_bound(y=y, a=a, x=as.data.frame(x), 
-                      outfam=NULL, treatfam=NULL, model="x", 
-                      eps=eps, delta=1, nsplits=NULL, do_mult_boot=TRUE,
-                      B=10000, do_eps_zero=FALSE, nuis_fns=nuis_fns, 
-                      alpha=alpha)
+    tmp <- get_bound(y = y, a = a, x = as.data.frame(x), ymin = 0, ymax = 1, 
+                      outfam = NULL, treatfam = NULL, model = "x", 
+                      eps = eps, delta = 1, nsplits = NULL, do_mult_boot = TRUE,
+                      B = 1000, do_eps_zero = FALSE, nuis_fns = nuis_fns, 
+                      alpha = alpha)
+    bounds <- tmp$bounds[, , 1]
+    n_eps <- length(eps)
     
-    out <- matrix(c(temp$bounds$ci_lo, temp$bounds$ci_hi, 
-                    rep(temp$mult_calpha_lb, length(eps)),
-                    rep(temp$mult_calpha_ub, length(eps))), 
-                  ncol=4, nrow=length(eps),
-                  dimnames=list(NULL, c("ci_lo", "ci_hi", "calpha_lb", 
-                                        "calpha_ub")))
+    
+    cnames_out <- c("ci_lo", "ci_hi", "calpha_lb", "calpha_ub")
+    out <- cbind(bounds[, "ci_lb_lo_unif"], bounds[, "ci_ub_hi_unif"],
+                 tmp$mult_calpha_lb, tmp$mult_calpha_lb)
+    colnames(out) <- cnames_out
     return(out)
   }
+  
   # Simulation begins
   sims <- pbreplicate(nsim, sim_fn())
   
-  # Make sure the multiplier for CI coming out of bootstrap procedure is no
-  # smaller than that for pointwise CI
+  # Make sure the multiplier for unif CI is no smaller than that for ptwise CI
   calpha_lb <- sims[1, "calpha_lb", ]
   expect_true(all(calpha_lb >= qnorm(1-alpha/2)))
   calpha_ub <- sims[1, "calpha_ub", ]
   expect_true(all(calpha_ub >= qnorm(1-alpha/2)))
   
   # Check uniform coverage (%) is okay
-  cvg <- coverage(sims[, "ci_lo", ], sims[, "ci_hi", ], 
-                  psil, psiu)
-  expect_true(abs(cvg - 100*(1-alpha)) <= 5)
+  cvg <- coverage(sims[, "ci_lo", ], sims[, "ci_hi", ], psil, psiu)
+  expect_true(abs(cvg - 100 * (1 - alpha)) <= 5)
 })
 

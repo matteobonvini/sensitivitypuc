@@ -4,9 +4,9 @@
 \alias{get_muahat}
 \title{get_muahat}
 \usage{
-get_muahat(y, a, x, newx, aval, trunc_tol = 0, family = gaussian(),
-  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.glm.interaction",
-  "SL.mean", "SL.ranger"))
+get_muahat(y, a, x, newx, aval, ymin, ymax, family = gaussian(),
+  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.ranger",
+  "SL.glm.interaction", "SL.mean"))
 }
 \arguments{
 \item{y}{nx1 vector of outcomes in [0, 1]}
@@ -19,8 +19,9 @@ get_muahat(y, a, x, newx, aval, trunc_tol = 0, family = gaussian(),
 
 \item{aval}{Scalar specifying which regression to estimate E(Y|A=aval,X=x)}
 
-\item{trunc_tol}{Scalar specifying the amount that the predicted values need 
-to be truncated by. Yhat is in [trunc_tol, 1-trunc_tol]. Default is 0.}
+\item{ymin}{infimum of the support of y (predictions will be >= ymin)}
+
+\item{ymax}{supremum of the support of y (predictions will be <= ymax)}
 
 \item{family}{Currently allows gaussian or binomial to describe the error 
 distribution. It is passed as argument to SL fun, should not contain link.}

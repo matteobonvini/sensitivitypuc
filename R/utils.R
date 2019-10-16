@@ -1,21 +1,5 @@
 # Some helper functions for the experiments contained in the paper
 
-#' summarize_by
-#' Wrapper for group_by + summarize_all from dplyr
-#' 
-#' @param x a matrix
-#' @param fun a function (as a string) that we want to apply to the values in 
-#' the matrix
-#' @param ... some columns in x which we want to apply fun conditional on
-#' @export
-summarize_by <- function(x, fun, ...) {
-  out <- as.data.frame(x) %>% 
-    dplyr::group_by(...) %>% 
-    dplyr::summarize_all(fun) %>%
-    as.data.frame()
-  return(out)
-}
-
 #' get_ci
 #' 
 #' get_ci constructs a Wald-type confidence interval
@@ -39,7 +23,11 @@ get_ci <- function(muhat, sigmahat, c) {
 #' @param n is the sample size
 #' @export 
 rmse <- function(simmat, truth, n) {
-  out <- apply(sweep(simmat, 1, truth, "-"), 2, function(x) sqrt(sum(x^2)))
+  if(is.matrix(simmat)) {
+  out <- apply(sweep(simmat, 1, truth, "-"), 1, function(x) sqrt(mean(x^2)))
+  } else {
+    out <- sqrt(mean(simmat - truth)^2)
+  }
   return(mean(out) * sqrt(n))
 }
 
@@ -85,9 +73,9 @@ coverage <- function(lo, hi, truth_lo, truth_hi) {
 #' @export
 bias <- function(simmat, truth) {
   if(is.matrix(simmat)) {
-    out <- apply(sweep(simmat, 1, truth, "-"), 2, mean)
+    out <- apply(sweep(simmat, 1, truth, "-"), 1, mean)
   } else {
-    out <- simmat - truth
+    out <- mean(simmat - truth)
   }
   return(100 * mean(abs(out)))
 }

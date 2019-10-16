@@ -3,9 +3,12 @@
 #' get_ifvals is the main function for getting the influence function values
 #' used to construct the estimator of either the lower or the upper bound curve.
 #' 
+#' @param n number of observations in the dataset (n = length(nu) = nrow(ghatmat))
 #' @param eps vector of arbitrary length specifying the values for the 
 #' proportion of confounding where the lower and upper bounds curves are 
 #' evaluated.
+#' @param delta vector of delta values specifying the extent of unmeasured
+#' confounding among S = 0 units, see manuscript. 
 #' @param upper boolean for whether the upper or the lower bound curve needs to
 #' be computed.
 #' @param nu nx1 vector of influence function values for the parameter 
@@ -18,43 +21,55 @@
 #' value of delta, the maximum bias allowed for the confounded units. See 
 #' manuscript. 
 #' @export
-get_ifvals <- function(eps, upper, nu, tau, ghatmat) {
+
+get_ifvals <- function(n, eps, delta, upper, nu, tau, ghatmat) {
   
-  # sample size
-  n <- nrow(nu)
-  neps <- ceiling(n*eps)
+  ndelta <- length(delta)
+  neps <- length(eps)
   
-  # order the value of g(eta) increasingly so that it's easier to get term like
-  # E(g I( g <= q_tau)) for q_tau being tau-quantile of g(eta).
-  ghatorder <- apply(ghatmat, 2, order)
-  ndelta <- ncol(ghatmat)
-  ghat <- sapply(1:ndelta, function(x) { ghatmat[ghatorder[, x], x] } )
-  .get_q <- Vectorize(function(delta) {
-    if(upper){
-      quant_eps <- 1-eps
-    } else{
-      quant_eps <- eps
-    }
-    out <- quantile(ghatmat[, which(colnames(ghatmat) == delta)], p = quant_eps)
-    return(out)
-  })
-  qhats <- .get_q(colnames(ghatmat))
-  
-  if(upper) { 
-    lambdahat <- do.call(cbind, lapply(neps, function(x) { c(rep(0, n-x), rep(1, x)) }))
-    
+  if(upper) {
+    seq_eps <- 1-eps
   } else {
-    lambdahat <- do.call(cbind, lapply(neps, function(x) { c(rep(1, x), rep(0, n-x)) }))
+    seq_eps <- eps
   }
-  nuorder <- sapply(1:ndelta, function(x) { nu[ghatorder[, x]] } )
-  if_gorder <- sapply(1:ndelta, function(x) { tau[ghatorder[, x], x] } )
-  ifvals <- sapply(1:ndelta, function(x) { 
-    sweep(lambdahat, 1, if_gorder[, x], "*") + nuorder[, x] })
-  colnames(ifvals) <- colnames(ghatmat)
-  ifvals <- cbind(unlist(lapply(1:length(eps), function(x) { rep(eps[x], n) } )), 
-                  ifvals)
-  colnames(ifvals) <- c("eps", colnames(ghatmat))
   
-  out <- list(ifvals=ifvals, lambda=lambdahat, quant=as.matrix(qhats))
+  qhats <- apply(ghatmat, 2, quantile, p = seq_eps, names = FALSE)
+  
+  # The following is because R selects the min as 0-quantile, matters only in
+  # finite samples
+  qhats[which(seq_eps == 0), ] <- apply(ghatmat, 2, min) - 1e-10
+  
+  ineq_sign <- ifelse(upper, ">", "<=")
+  .get_indicator <- function(x) {
+    out <- 1 * sweep(ghatmat, 2, qhats[x, ], ineq_sign)
+    return(out)
+  }
+  lambda <- aperm(sapply(1:length(eps), .get_indicator, simplify = "array"),
+                  c(1, 3, 2))
+  
+  # rqhats <- aperm(array(qhats, dim = c(neps, ndelta, 1)), c(3, 1, 2))
+  # dimnames(rqhats) <- list(1, eps, delta)
+  # .get_indicator <- function(x) {
+  #   out <- 1 * sweep(ghatmat, 2, x, ineq_sign)
+  #   return(out)
+  # }
+  
+  # lambda <- apply(qhats, 1, .get_indicator)
+  # lambda <- aperm(array(lambda, dim = c(ndelta, neps, n)), c(3, 2, 1))
+  
+  .get_lambdaq <- function(x) {
+    out <- sweep(lambda[, , x], 2, qhats[, x], "*")
+    return(out)
+  }
+  lambdaq <- sapply(1:ndelta, .get_lambdaq, simplify = "array")
+  
+  .get_ifs <- function(x) {
+    out <- sweep(sweep(lambda[, , x], 1, tau[, x], "*"), 1, nu, "+")
+    return(out)
+  }
+  ifs <- sapply(1:ndelta, .get_ifs, simplify = "array")
+  
+  out <- list(ifvals = ifs, lambda = lambda, quant = qhats, lambdaq = lambdaq)
+  
   return(out)
 }

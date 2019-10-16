@@ -4,10 +4,12 @@
 \alias{get_im04}
 \title{get_im04}
 \usage{
-get_im04(n, lb, ub, sigma_l, sigma_u, alpha)
+get_im04(dat, n, alpha)
 }
 \arguments{
 \item{n}{number of observations}
+
+\item{alpha}{desired significance level}
 
 \item{lb}{estimate of lower bound}
 
@@ -16,8 +18,6 @@ get_im04(n, lb, ub, sigma_l, sigma_u, alpha)
 \item{sigma_l}{estimate of standard deviation of lb}
 
 \item{sigma_u}{estimate of standard deviation of ub}
-
-\item{alpha}{desired significance level}
 }
 \description{
 get_im04 computes c_alpha as in Imbens and Manski (2004)
