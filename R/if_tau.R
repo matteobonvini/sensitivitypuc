@@ -12,8 +12,7 @@
 #' @param upper boolean (default is upper=FALSE) if TRUE if values for 
 #' E(g_u(eta)) are returned, otherwise those for E(g_l(eta)) are returned
 #' @export
-if_tau <- Vectorize(function(y, a, ymin, ymax, pi0, pi1, mu0, mu1, delta = 1, 
-                             upper = FALSE) {
+if_tau <- function(y, a, ymin, ymax, pi0, pi1, mu0, mu1, upper = FALSE) {
   
   if(!upper) {
     # IF for E{ pi(x) * (ymax - mu0(x)) }
@@ -27,7 +26,5 @@ if_tau <- Vectorize(function(y, a, ymin, ymax, pi0, pi1, mu0, mu1, delta = 1,
     if2 <- (1-a) * ymax - (pi0/pi1 * a * (y-mu1) + (1-a) * mu1)
   }
   
-  out <- delta * (if2 - if1)
-  
-  return(as.matrix(out))
-}, vectorize.args = "delta")
+  return(as.matrix(if2 - if1))
+}

@@ -9,11 +9,19 @@ get_multboot(n, psihat, sigmahat, ifvals, alpha = 0.05, B = 10000)
 \arguments{
 \item{n}{the number of observations}
 
-\item{psihat}{ADD}
+\item{psihat}{Estimate of either lower or upper bound curve minus 
+(epsilon times an estimate of the appropriate quantile). It is a vector 
+of length equal to the number of epsilon points at which the lower and upper 
+bounds curves are evaluated.}
 
-\item{sigmahat}{ADD}
+\item{sigmahat}{Estimate of the variance of psihat at each value of eps grid.
+It is a vector of length equal to the number of epsilon points at which the 
+lower and upper bounds curves are evaluated.}
 
-\item{ifvals}{ADD}
+\item{ifvals}{n times neps matrix, where n is number of observations, and 
+neps is the number of epsilon points at which the lower and upper bounds 
+curves are evaluated. It represents the "influence function" values 
+associated with psihat. See manuscript (Lemma 2)}
 
 \item{alpha}{confidence level (default is 0.05)}
 

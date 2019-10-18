@@ -8,7 +8,7 @@ get_bound(y, a, x, ymin, ymax, outfam, treatfam, model = "x", eps = 0,
   delta = 0, nsplits = 5, do_mult_boot = TRUE, do_eps_zero = TRUE,
   alpha = 0.05, B = 10000, nuis_fns = NULL, plugin = FALSE,
   sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.mean", "SL.ranger",
-  "SL.glm.interaction"))
+  "SL.glm.interaction"), do_parallel = FALSE, ncluster = NULL)
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}
@@ -60,6 +60,10 @@ SuperLearner via cross-fitting.}
 type (ensuring monotonicity in epsilon): uses g(etahat) rather than its
 estimator based on influence functions when computing term that multiplies 
 the indicator. See manuscript (g(etahat) instead of tauhat).}
+
+\item{do_parallel}{boolean for whether parallel computing should be used}
+
+\item{ncluster}{number of clusters used if parallel computing is used.}
 }
 \description{
 get_bound is the main function to estimate the lower and upper bounds curves.

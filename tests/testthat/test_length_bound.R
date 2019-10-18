@@ -103,6 +103,7 @@ test_that("width is increasing in epsilon", {
     tol <- 1e-10
     diff_lengths <- round(apply(length_bounds, 2, diff, lag = 1), tol)
     expect_true(all(diff_lengths >= 0))
+    
   }
   
   mono_test_wrapper <- function() {

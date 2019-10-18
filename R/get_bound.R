@@ -34,6 +34,8 @@
 #' type (ensuring monotonicity in epsilon): uses g(etahat) rather than its
 #' estimator based on influence functions when computing term that multiplies 
 #' the indicator. See manuscript (g(etahat) instead of tauhat). 
+#' @param do_parallel boolean for whether parallel computing should be used
+#' @param ncluster number of clusters used if parallel computing is used.
 #' @export
 
 get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x", 
@@ -41,12 +43,14 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
                       do_eps_zero = TRUE, alpha = 0.05, B = 10000, 
                       nuis_fns = NULL, plugin = FALSE, 
                       sl.lib = c("SL.earth","SL.gam","SL.glm", "SL.mean", 
-                                 "SL.ranger", "SL.glm.interaction")) {
+                                 "SL.ranger", "SL.glm.interaction"),
+                      do_parallel = FALSE, ncluster = NULL) {
   
   if(is.null(nuis_fns)) {
     nuis_fns <- do_crossfit(y = y, a = a, x = x, outfam = outfam, 
                             treatfam = treatfam, nsplits = nsplits, 
-                            sl.lib = sl.lib, ymin = ymin, ymax = ymax)
+                            sl.lib = sl.lib, ymin = ymin, ymax = ymax, 
+                            do_parallel = do_parallel, ncluster = ncluster)
   }
   pi0hat <- nuis_fns[, "pi0"]
   pi1hat <- nuis_fns[, "pi1"]
@@ -62,41 +66,42 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
   nuhat <- as.matrix(psi1 - psi0)
   
   if(model == "x") {
+    
     pi0g <- pi0hat
     pi1g <- pi1hat
+    
   } else if(model == "xa") {
+    
     pi0g <- 1 - a
     pi1g <- a
+    
   } else {
+    
     stop("model not supported!")
+    
   }
   
-  .get_g <- Vectorize(function(delta, upper) {
-    if(upper){
-      deltal <- delta*(ymin - mu0hat)
-      deltau <- delta*(ymax - mu1hat)
-
-    } else {
-      deltal <- delta*(ymax - mu0hat)
-      deltau <- delta*(ymin - mu1hat)
-    }
-    return(pi0g*deltau - pi1g*deltal)
-  }, "delta")
+  glhat <- pi0g * (ymin - mu1hat) - pi1g * (ymax - mu0hat)
+  guhat <- pi0g * (ymax - mu1hat) - pi1g * (ymin - mu0hat)
+  glhat <- glhat %*% t(delta)
+  guhat <- guhat %*% t(delta)
   
-  glhat <- .get_g(delta, upper = FALSE)
-  guhat <- .get_g(delta, upper = TRUE)
   colnames(glhat) <- colnames(guhat) <- delta
   
   if(!plugin) {
+    
     tauhat_lb <- if_tau(y = y, a = a, ymin = ymin, ymax = ymax, pi0 = pi0hat, 
-                        pi1 = pi1hat, mu0 = mu0hat, mu1 = mu1hat, delta = delta, 
-                        upper = FALSE)
+                        pi1 = pi1hat, mu0 = mu0hat, mu1 = mu1hat, upper = FALSE)
     tauhat_ub <- if_tau(y = y, a = a, ymin = ymin, ymax = ymax, pi0 = pi0hat, 
-                        pi1 = pi1hat, mu0 = mu0hat, mu1 = mu1hat, delta = delta, 
-                        upper = TRUE)
+                        pi1 = pi1hat, mu0 = mu0hat, mu1 = mu1hat, upper = TRUE)
+    tauhat_lb <- tauhat_lb %*% t(delta)
+    tauhat_ub <- tauhat_ub %*% t(delta)
+    
   } else {
+    
     tauhat_lb <- glhat
     tauhat_ub <- guhat
+    
   }
   colnames(tauhat_lb) <- colnames(tauhat_ub) <- delta
   
@@ -116,7 +121,7 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
   
   phibar_l <- ifvals_l - lambdaq_l
   phibar_u <- ifvals_u - lambdaq_u
-
+  
   est_l <- apply(ifvals_l, c(2, 3), mean)
   est_u <- apply(ifvals_u, c(2, 3), mean)
   var_l <- apply(phibar_l, c(2, 3), var)

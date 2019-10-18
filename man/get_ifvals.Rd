@@ -4,9 +4,11 @@
 \alias{get_ifvals}
 \title{get_ifvals}
 \usage{
-get_ifvals(eps, delta, upper, nu, tau, ghatmat)
+get_ifvals(n, eps, delta, upper, nu, tau, ghatmat)
 }
 \arguments{
+\item{n}{number of observations in the dataset (n = length(nu) = nrow(ghatmat))}
+
 \item{eps}{vector of arbitrary length specifying the values for the 
 proportion of confounding where the lower and upper bounds curves are 
 evaluated.}

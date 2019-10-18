@@ -5,8 +5,9 @@
 \title{do_crossfit}
 \usage{
 do_crossfit(y, a, x, ymin, ymax, outfam = gaussian(),
-  treatfam = binomial(), nsplits = 5, sl.lib = c("SL.earth",
-  "SL.gam", "SL.glm", "SL.mean", "SL.ranger", "SL.glm.interaction"))
+  treatfam = binomial(), nsplits = 5, do_parallel = FALSE,
+  ncluster = NULL, sl.lib = c("SL.earth", "SL.gam", "SL.glm",
+  "SL.mean", "SL.ranger", "SL.glm.interaction"))
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}
@@ -22,6 +23,10 @@ regression, currently gaussian() or binomial(), should not specify link.}
 regression, currently gaussian() or binomial(), should not specify link.}
 
 \item{nsplits}{number of splits for the cross-fitting.}
+
+\item{do_parallel}{boolean for whether parallel computing should be used}
+
+\item{ncluster}{number of clusters used if parallel computing is used.}
 
 \item{sl.lib}{vector specifying which libraries to use for the SL.}
 }

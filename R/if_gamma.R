@@ -11,6 +11,6 @@
 #' @export
 if_gamma <- function(y, a, aval, pia, mua) {
   
-  return(I(a==aval)*(y-mua)/pia + mua)
+  return(I(a == aval) * (y - mua) / pia + mua)
   
 }
