@@ -44,18 +44,9 @@ get_ifvals <- function(n, eps, delta, upper, nu, tau, ghatmat) {
     out <- 1 * sweep(ghatmat, 2, qhats[x, ], ineq_sign)
     return(out)
   }
+  
   lambda <- aperm(sapply(1:length(eps), .get_indicator, simplify = "array"),
                   c(1, 3, 2))
-  
-  # rqhats <- aperm(array(qhats, dim = c(neps, ndelta, 1)), c(3, 1, 2))
-  # dimnames(rqhats) <- list(1, eps, delta)
-  # .get_indicator <- function(x) {
-  #   out <- 1 * sweep(ghatmat, 2, x, ineq_sign)
-  #   return(out)
-  # }
-  
-  # lambda <- apply(qhats, 1, .get_indicator)
-  # lambda <- aperm(array(lambda, dim = c(ndelta, neps, n)), c(3, 2, 1))
   
   .get_lambdaq <- function(x) {
     out <- sweep(lambda[, , x], 2, qhats[, x], "*")

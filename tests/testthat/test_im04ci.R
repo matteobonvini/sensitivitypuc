@@ -41,40 +41,50 @@ test_that("Coverage of Imbens & Manski (2004) is correct", {
     nuis_fns[, "pi0"] <- pi0x
     gx <- 1 - 0.5*x
     
-    temp <- get_bound(y = y, a = a, x = as.data.frame(x), ymin = 0, ymax = 1, 
-                      outfam = NULL, treatfam = NULL, model = "x", eps = eps, 
-                      delta = 1, nsplits = NULL, do_mult_boot = FALSE,
-                      do_eps_zero = FALSE, nuis_fns = nuis_fns, alpha = alpha)
+    res <- get_bound(y = y, a = a, x = as.data.frame(x), ymin = 0, ymax = 1, 
+                     outfam = NULL, treatfam = NULL, model = "x", eps = eps, 
+                     delta = 1, nsplits = NULL, do_mult_boot = FALSE,
+                     do_eps_zero = FALSE, nuis_fns = nuis_fns, alpha = alpha,
+                     do_rearrange = FALSE)
     # Machine precision 
-    calpha <- round(temp$im04_calpha, 15)
+    
+    calpha <- round(res$im04_calpha, 15)
     zalpha <- round(qnorm(1-alpha), 15)
     zalpha2 <- round(qnorm(1-alpha/2), 15)
     expect_true(all(zalpha <= calpha & calpha <= zalpha2))
     
-    ci_lo_im04 <- round(temp$bounds[, "ci_im04_lo", 1], 15)
-    ci_hi_im04 <- round(temp$bounds[, "ci_im04_hi", 1], 15)
-    ci_lo_pt <- round(temp$bounds[, "ci_lb_lo_pt", 1], 15)
-    ci_hi_pt <- round(temp$bounds[, "ci_ub_hi_pt", 1], 15)
+    ci_lo_im04 <- round(res$bounds[, "ci_im04_lo", 1], 15)
+    ci_hi_im04 <- round(res$bounds[, "ci_im04_hi", 1], 15)
+    ci_lo_pt <- round(res$bounds[, "ci_lb_lo_pt", 1], 15)
+    ci_hi_pt <- round(res$bounds[, "ci_ub_hi_pt", 1], 15)
+    
     # IM 04 Ci should be contained in the pointwise bands covering the 
     # identification region
     expect_true(all(ci_lo_pt <= ci_lo_im04 & ci_hi_im04 <= ci_hi_pt))
     
+    # prepare output
     out <- matrix(c(ci_lo_pt, ci_hi_pt, ci_lo_im04, ci_hi_im04, calpha),
                   ncol = 5, nrow = length(eps),
                   dimnames = list(NULL, c("ci_lo_pt", "ci_lo_pt", "ci_lo_im04", 
                                           "ci_hi_im04", "calpha")))
     return(out)
   }
+  
+  cvg <- Vectorize(function(sims, psi, x) {
+    coverage(sims[x, "ci_lo_im04", ], sims[x, "ci_hi_im04", ], 
+             psi[x], psi[x])
+  }, vectorize.args = "x")
+  
   # Simulation begins
   sims <- pbreplicate(nsim, sim_fn())
-
+  
   # Check pointwise coverage is okay at, e.g., eps = eps[5]
-  cvg <- Vectorize(function(x) {
-    coverage(sims[x, "ci_lo_im04", ], sims[x, "ci_hi_im04", ], 
-             psil[x], psil[x])
-  })
-  cvgs <- cvg(1:length(eps))
+  # case when the true curve psi(eps) is equal to lower bound
+  cvgs_l <- cvg(sims = sims, psi = psil, x = 1:length(eps))
+  # case when the true curve psi(eps) is equal the upper bound
+  cvgs_u <- cvg(sims = sims, psi = psiu, x = 1:length(eps))
   # Both coverage and bias are expressed in %
-  expect_true(all(abs(cvgs - 100*(1-alpha)) <= 5))
+  expect_true(all(abs(cvgs_l - 100*(1-alpha)) <= 5))
+  expect_true(all(abs(cvgs_u - 100*(1-alpha)) <= 5))
 })
 

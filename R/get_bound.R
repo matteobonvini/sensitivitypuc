@@ -34,6 +34,8 @@
 #' type (ensuring monotonicity in epsilon): uses g(etahat) rather than its
 #' estimator based on influence functions when computing term that multiplies 
 #' the indicator. See manuscript (g(etahat) instead of tauhat). 
+#' @param do_rearrange bollean for whether the precedure by Chernozhukov et al
+#' (2008) should be applied to the estimators of the bounds and the CIs.
 #' @param do_parallel boolean for whether parallel computing should be used
 #' @param ncluster number of clusters used if parallel computing is used.
 #' @export
@@ -41,7 +43,7 @@
 get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x", 
                       eps = 0, delta = 0, nsplits = 5, do_mult_boot = TRUE, 
                       do_eps_zero = TRUE, alpha = 0.05, B = 10000, 
-                      nuis_fns = NULL, plugin = FALSE, 
+                      nuis_fns = NULL, plugin = FALSE, do_rearrange = FALSE,
                       sl.lib = c("SL.earth","SL.gam","SL.glm", "SL.mean", 
                                  "SL.ranger", "SL.glm.interaction"),
                       do_parallel = FALSE, ncluster = NULL) {
@@ -128,6 +130,7 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
   var_u <- apply(phibar_u, c(2, 3), var)
   
   if(do_mult_boot) {
+    
     lb_estbar <- apply(phibar_l, c(2, 3), mean)
     ub_estbar <- apply(phibar_u, c(2, 3), mean)
     
@@ -143,7 +146,7 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
                         sigmahat = var_u, ifvals = -phibar_u)
     calpha_lb <- matrix(rep(calpha_lb, neps), ncol = ndelta, nrow = neps, 
                         byrow = TRUE)
-    calpha_ub <- matrix(rep(calpha_lb, neps), ncol = ndelta, nrow = neps, 
+    calpha_ub <- matrix(rep(calpha_ub, neps), ncol = ndelta, nrow = neps, 
                         byrow = TRUE)
   } else {
     calpha_lb <- calpha_ub <- qnorm(1-alpha/2)
@@ -166,6 +169,7 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
   
   ci_lb <- get_ci(est_l, sqrt(var_l/n), calpha_lb)
   ci_ub <- get_ci(est_u, sqrt(var_u/n), calpha_ub)
+  
   ci_lb_pt <- get_ci(est_l, sqrt(var_l/n), qnorm(1-alpha/2))
   ci_ub_pt <- get_ci(est_u, sqrt(var_u/n), qnorm(1-alpha/2))
   
@@ -173,10 +177,20 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
                 dim = c(neps, ndelta, 4))
   cim04 <- apply(temp, c(1, 2), get_im04, n = n, alpha = alpha)
   
-  ci_im04_l <- get_ci(est_l, sqrt(var_l/n), cim04)[, 1, ]
-  ci_im04_u <- get_ci(est_u, sqrt(var_u/n), cim04)[, 2, ]      
+  ci_im04_l <- get_ci(est_l, sqrt(var_l/n), cim04)[, 1, , drop = FALSE]
+  ci_im04_u <- get_ci(est_u, sqrt(var_u/n), cim04)[, 2, , drop = FALSE] 
+  
   ci_im04 <- aperm(array(cbind(ci_im04_l, ci_im04_u), dim = c(neps, ndelta, 2)), 
                    c(1, 3, 2))
+  
+  if(do_rearrange) {
+    
+    ci_lb <- apply(ci_lb, c(2, 3), sort, decreasing = TRUE)
+    ci_ub <- apply(ci_ub, c(2, 3), sort, decreasing = FALSE)
+    est_l <- apply(est_l, 2, sort, decreasing = TRUE)
+    est_u <- apply(est_u, 2, sort, decreasing = FALSE)
+    
+  }
   
   # Return results in a user-friendly format
   temp_fn <- function(x) {

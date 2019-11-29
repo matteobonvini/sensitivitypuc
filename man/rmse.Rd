@@ -7,10 +7,10 @@
 rmse(simmat, truth, n)
 }
 \arguments{
-\item{simmat}{a n x nsim matrix, where n is the number of epsilon points used
+\item{simmat}{a neps x nsim matrix, where neps is the number of epsilon points used
 in evaluation and nsim is the number of simulations}
 
-\item{truth}{a n x 1 vector containing the true values for the curve}
+\item{truth}{a neps x 1 vector containing the true values for the curve}
 
 \item{n}{is the sample size}
 }

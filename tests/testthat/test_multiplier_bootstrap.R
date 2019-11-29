@@ -1,8 +1,23 @@
 context("Multiplier Bootstrap")
 
+require(pbapply)
+
+# Make sure the multiplier for unif CI is no smaller than that for ptwise CI
+check_multiplier <- function(sims) {
+  calpha_lb <- sims[, "calpha_lb", ]
+  expect_true(all(calpha_lb >= qnorm(1-alpha/2)))
+  calpha_ub <- sims[, "calpha_ub", ]
+  expect_true(all(calpha_ub >= qnorm(1-alpha/2)))
+}
+
+# Check uniform coverage (%) is okay
+check_cvg <- function(sims, psil, psiu, alpha) {
+  cvg <- coverage(sims[, "ci_lo", ], sims[, "ci_hi", ], psil, psiu)
+  print(paste0("Coverage is ", cvg, "%"))
+  expect_true(abs(cvg - 100 * (1 - alpha)) <= 5)
+}
+
 test_that("uniform coverage is correct", {
-  
-  require(pbapply)
   # Data generating process:
   # X ~ Unif(0, 1); A ~ Bern(0.5); Y = A*X + (1-A)
   # so that pi(x) = 0.5; mu1(x) = x; mu0(x) = 1; g(x) = 1 - 0.5*x
@@ -16,8 +31,8 @@ test_that("uniform coverage is correct", {
   
   # Start simulation to check coverage
   nsim <- 500
-  n <- 10000
-  alpha <- 0.2
+  n <- 100
+  alpha <- 0.50
   
   psiu <- -0.25*(eps^2 - 4*eps + 2)
   psil <- 0.25*(eps^2 - 2*eps - 2)
@@ -41,33 +56,100 @@ test_that("uniform coverage is correct", {
     nuis_fns[, "pi0"] <- pi0x
     gx <- 1 - 0.5*x
     
-    tmp <- get_bound(y = y, a = a, x = as.data.frame(x), ymin = 0, ymax = 1, 
-                      outfam = NULL, treatfam = NULL, model = "x", 
-                      eps = eps, delta = 1, nsplits = NULL, do_mult_boot = TRUE,
-                      B = 1000, do_eps_zero = FALSE, nuis_fns = nuis_fns, 
-                      alpha = alpha)
-    bounds <- tmp$bounds[, , 1]
-    n_eps <- length(eps)
+    cnames <- c("ci_lo", "ci_hi", "calpha_lb", "calpha_ub")
     
+    get_res <- function(do_rearrange) {
+      tmp <- get_bound(y = y, a = a, x = as.data.frame(x), ymin = 0, ymax = 1, 
+                       outfam = NULL, treatfam = NULL, model = "x", 
+                       eps = eps, delta = 1, nsplits = NULL, do_mult_boot = TRUE,
+                       B = 10000, do_eps_zero = FALSE, nuis_fns = nuis_fns, 
+                       alpha = alpha, do_rearrange = do_rearrange)
+      bounds <- tmp$bounds[, , 1]
+      
+      out <- cbind(bounds[, "ci_lb_lo_unif"], bounds[, "ci_ub_hi_unif"],
+                   tmp$mult_calpha_lb, tmp$mult_calpha_lb)
+      colnames(out) <- cnames
+      return(out)
+    }
     
-    cnames_out <- c("ci_lo", "ci_hi", "calpha_lb", "calpha_ub")
-    out <- cbind(bounds[, "ci_lb_lo_unif"], bounds[, "ci_ub_hi_unif"],
-                 tmp$mult_calpha_lb, tmp$mult_calpha_lb)
-    colnames(out) <- cnames_out
+    res_r <- get_res(do_rearrange = TRUE)
+    res_nr <- get_res(do_rearrange = FALSE)
+    
+    # To avoid randomness from sampling multiplier bootstrap, we do the
+    # re-arranging on the non-rearranged bands for fair comparison
+    covered_r <- all(I(sort(res_nr[, "ci_lo"], decreasing = TRUE) <= psil & 
+                         psiu <= sort(res_nr[, "ci_hi"], decreasing = FALSE)))
+    covered_nr <- all(I(res_nr[, "ci_lo"] <= psil & psiu <= res_nr[, "ci_hi"]))
+    expect_true(covered_r >= covered_nr)
+    
+    out <- array(c(res_r, res_nr), dim = c(nrow(res_r), ncol(res_r), 2),
+                 dimnames = list(NULL,  cnames, c("r", "nr")))
     return(out)
   }
   
   # Simulation begins
   sims <- pbreplicate(nsim, sim_fn())
   
-  # Make sure the multiplier for unif CI is no smaller than that for ptwise CI
-  calpha_lb <- sims[1, "calpha_lb", ]
-  expect_true(all(calpha_lb >= qnorm(1-alpha/2)))
-  calpha_ub <- sims[1, "calpha_ub", ]
-  expect_true(all(calpha_ub >= qnorm(1-alpha/2)))
-  
-  # Check uniform coverage (%) is okay
-  cvg <- coverage(sims[, "ci_lo", ], sims[, "ci_hi", ], psil, psiu)
-  expect_true(abs(cvg - 100 * (1 - alpha)) <= 5)
+  check_multiplier(sims[, , "r", ])
+  check_multiplier(sims[, , "nr", ])
+  check_cvg(sims_r, psil, psiu, alpha)
+  check_cvg(sims_nr, psil, psiu, alpha)
 })
 
+test_that("uniform coverage is correct using truth in simulation paper", {
+  
+  source("simulation_true_regression_functions.R")
+  ## Load true values ##
+  truth <- readRDS("./data/truth_simulation.RData")
+  n <- 5000
+  eps <- attributes(truth)$eps_seq
+  alpha <- 0.10
+  nsim <- 500
+  
+  sim_fn <- function() {
+    df <- gen_data(n) 
+    
+    cnames <- c("mu1", "mu0", "pi1", "pi0")
+    nuis_fns <- matrix(NA, ncol = 4, nrow = n, dimnames = list(NULL, cnames))
+    nuis_fns[, "mu1"] <- mu1x(df$x1, df$x2)
+    nuis_fns[, "mu0"] <- mu0x(df$x1, df$x2)
+    nuis_fns[, "pi1"] <- pix(df$x1)
+    nuis_fns[, "pi0"] <- 1 - nuis_fns[, "pi1"]
+    
+    y <- df$y; a <- df$a; x <- df[, c("x1", "x2")]
+    
+    # sl.lib <- c("SL.mean", "SL.glm", "SL.glm.interaction")
+    # tmp <- get_bound(y = y, a = a, x = x, ymin = 0, ymax = 1, outfam = binomial(),
+    #                  treatfam = binomial(), model = "x", eps = eps, delta = 1,
+    #                  nsplits = 5, do_mult_boot = TRUE, B = 10000,
+    #                  do_eps_zero = FALSE, nuis_fns = NULL, alpha = alpha,
+    #                  do_rearrange = FALSE, sl.lib = sl.lib)
+    
+    tmp <- get_bound(y = df$y, a = df$a, x = df[, c("x1", "x2")], ymin = 0,
+                     ymax = 1, outfam = NULL, treatfam = NULL, model = "x",
+                     eps = eps, delta = 1, nsplits = NULL, do_mult_boot = TRUE,
+                     B = 10000, do_eps_zero = FALSE, nuis_fns = nuis_fns,
+                     alpha = alpha, do_rearrange = FALSE)
+    
+    cnames <- c("ci_lo", "ci_hi", "calpha_lb", "calpha_ub")
+    
+    bounds <- tmp$bounds[, , 1]
+    
+    out <- cbind(bounds[, "ci_lb_lo_unif"], bounds[, "ci_ub_hi_unif"],
+                 tmp$mult_calpha_lb, tmp$mult_calpha_ub)
+    colnames(out) <- cnames
+    return(out)
+  }
+  
+  sims <- pbreplicate(nsim, sim_fn())
+  
+  check_multiplier(sims)
+  check_multiplier(sims)
+  cvg <- coverage(sims[, "ci_lo", ], sims[, "ci_hi", ], truth[, "lb"], truth[, "ub"])
+  print(paste0("Coverage is ", cvg, "%"))
+  # tolerance for miscoverage
+  tol <- 0.03
+  # Because we allow alpha/2 error on each curve, by bonferroni coverage should
+  # satisfy the following inequalities
+  expect_true(100 *(1-alpha - tol) <= cvg & cvg <= 100 *(1-alpha/2 + tol))
+})

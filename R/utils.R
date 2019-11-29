@@ -17,9 +17,9 @@ get_ci <- function(muhat, sigmahat, c) {
 #' rmse
 #' 
 #' rmse computes RMSE, see Section 5 in paper
-#' @param simmat a n x nsim matrix, where n is the number of epsilon points used
+#' @param simmat a neps x nsim matrix, where neps is the number of epsilon points used
 #' in evaluation and nsim is the number of simulations
-#' @param truth a n x 1 vector containing the true values for the curve
+#' @param truth a neps x 1 vector containing the true values for the curve
 #' @param n is the sample size
 #' @export 
 rmse <- function(simmat, truth, n) {

@@ -7,8 +7,9 @@
 get_bound(y, a, x, ymin, ymax, outfam, treatfam, model = "x", eps = 0,
   delta = 0, nsplits = 5, do_mult_boot = TRUE, do_eps_zero = TRUE,
   alpha = 0.05, B = 10000, nuis_fns = NULL, plugin = FALSE,
-  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.mean", "SL.ranger",
-  "SL.glm.interaction"), do_parallel = FALSE, ncluster = NULL)
+  do_rearrange = FALSE, sl.lib = c("SL.earth", "SL.gam", "SL.glm",
+  "SL.mean", "SL.ranger", "SL.glm.interaction"), do_parallel = FALSE,
+  ncluster = NULL)
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}
@@ -60,6 +61,9 @@ SuperLearner via cross-fitting.}
 type (ensuring monotonicity in epsilon): uses g(etahat) rather than its
 estimator based on influence functions when computing term that multiplies 
 the indicator. See manuscript (g(etahat) instead of tauhat).}
+
+\item{do_rearrange}{bollean for whether the precedure by Chernozhukov et al
+(2008) should be applied to the estimators of the bounds and the CIs.}
 
 \item{do_parallel}{boolean for whether parallel computing should be used}
 

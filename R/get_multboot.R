@@ -21,9 +21,9 @@
 get_multboot <- function(n, psihat, sigmahat, ifvals, alpha = 0.05, B = 10000) {
   
   ifvals2 <- sweep(sweep(ifvals, 2, psihat, "-"), 2, sqrt(sigmahat), "/")
-  radem <- matrix(2 * rbinom(n * B, 1, 0.5) - 1, nrow = B, ncol = n)
+  mult <- matrix(2 * rbinom(n * B, 1, 0.5) - 1, nrow = B, ncol = n)
 
-  maxvals <- matrixStats::rowMaxs(radem %*% ifvals2 / sqrt(n))
+  maxvals <- matrixStats::rowMaxs(mult %*% ifvals2 / sqrt(n))
   calpha <- quantile(maxvals, 1 - alpha)
   
   return(calpha)

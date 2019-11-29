@@ -36,10 +36,12 @@ get_eps_zero <- function(n, eps, lb, ub, ql, qu, ifvals_lb, ifvals_ub,
   phi_zero <- sweep(if_l, 2, ub_zero, "*") + sweep(if_u, 2, lb_zero, "*")
   der <- (ub_zero*ql_zero + lb_zero*qu_zero)^(-2)
   vars <- apply(phi_zero, 2, var) / n
-  se_eps_zero <- sqrt(der * vars)
+  var_eps0 <- der * vars
+  se_eps_zero <- sqrt(var_eps0)
   
   ci <- get_ci(est, se_eps_zero, qnorm(1-alpha/2))
   
-  out <- data.frame(delta = delta, est = est, ci_lo = ci[, 1], ci_hi = ci[, 2])
+  out <- data.frame(delta = delta, est = est, ci_lo = ci[, 1], ci_hi = ci[, 2],
+                    var_eps0 = var_eps0)
   return(out)
 }
