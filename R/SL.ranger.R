@@ -1,3 +1,6 @@
+## This code is taken from Professor Edward H Kennedy R package npcausal at
+## https://github.com/ehkennedy/npcausal
+
 #' @title Add Ranger wrapper for SuperLearner
 #'
 #' @description \code{SL.ranger} is a wrapper for \code{SuperLearner} that adds the fast random forests method \code{ranger}.
