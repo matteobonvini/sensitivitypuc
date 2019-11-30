@@ -3,7 +3,7 @@ context("Multiplier Bootstrap")
 require(pbapply)
 
 # Make sure the multiplier for unif CI is no smaller than that for ptwise CI
-check_multiplier <- function(sims) {
+check_multiplier <- function(sims, alpha) {
   calpha_lb <- sims[, "calpha_lb", ]
   expect_true(all(calpha_lb >= qnorm(1-alpha/2)))
   calpha_ub <- sims[, "calpha_ub", ]
@@ -13,7 +13,7 @@ check_multiplier <- function(sims) {
 # Check uniform coverage (%) is okay
 check_cvg <- function(sims, psil, psiu, alpha) {
   cvg <- coverage(sims[, "ci_lo", ], sims[, "ci_hi", ], psil, psiu)
-  print(paste0("Coverage is ", cvg, "%"))
+  print(paste0("Coverage is ", cvg, "% when truth is ", 100 * (1-alpha), "%"))
   expect_true(abs(cvg - 100 * (1 - alpha)) <= 5)
 }
 
@@ -90,8 +90,8 @@ test_that("uniform coverage is correct", {
   # Simulation begins
   sims <- pbreplicate(nsim, sim_fn())
   
-  check_multiplier(sims[, , "r", ])
-  check_multiplier(sims[, , "nr", ])
+  check_multiplier(sims[, , "r", ], alpha)
+  check_multiplier(sims[, , "nr", ], alpha)
   check_cvg(sims_r, psil, psiu, alpha)
   check_cvg(sims_nr, psil, psiu, alpha)
 })
@@ -136,10 +136,10 @@ test_that("uniform coverage is correct using truth in simulation paper", {
   
   sims <- pbreplicate(nsim, sim_fn())
   
-  check_multiplier(sims)
-  check_multiplier(sims)
+  check_multiplier(sims, alpha)
+  check_multiplier(sims, alpha)
   cvg <- coverage(sims[, "ci_lo", ], sims[, "ci_hi", ], truth[, "lb"], truth[, "ub"])
-  print(paste0("Coverage is ", cvg, "%"))
+  print(paste0("Coverage is ", cvg, "% when truth is ", 100 * (1-alpha), "%"))
   # tolerance for miscoverage
   tol <- 0.03
   # Because we allow alpha/2 error on each curve, by bonferroni coverage should
