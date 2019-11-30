@@ -3,7 +3,7 @@ Title: Sensitivity Analysis via the Proportion of Unmeasured Confounding (PUC)
 Version: 0.0.0.9000
 Authors@R: person("Matteo", "Bonvini", email = "mbonvini@andrew.cmu.edu", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
-Depends: R (>= 3.4.1), dplyr, SuperLearner, matrixStats, doParallel
+Depends: dplyr, SuperLearner, matrixStats, doParallel
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
