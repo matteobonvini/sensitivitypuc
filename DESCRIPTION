@@ -1,5 +1,5 @@
-Package: sensAteBounds
-Title: Sensitivity Analysis via the Proportion of Unmeasured Confounding
+Package: sensitivitypuc
+Title: Sensitivity Analysis via the Proportion of Unmeasured Confounding (PUC)
 Version: 0.0.0.9000
 Authors@R: person("Matteo", "Bonvini", email = "mbonvini@andrew.cmu.edu", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
