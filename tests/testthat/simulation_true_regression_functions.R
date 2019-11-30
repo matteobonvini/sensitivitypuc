@@ -1,5 +1,5 @@
 ###################################################
-# True regression functions for DAP of Simulation #
+# True regression functions for DGP of Simulation #
 ###################################################
 require(truncnorm)
 require(cubature)

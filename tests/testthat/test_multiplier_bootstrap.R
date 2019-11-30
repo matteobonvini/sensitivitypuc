@@ -118,13 +118,6 @@ test_that("uniform coverage is correct using truth in simulation paper", {
     
     y <- df$y; a <- df$a; x <- df[, c("x1", "x2")]
     
-    # sl.lib <- c("SL.mean", "SL.glm", "SL.glm.interaction")
-    # tmp <- get_bound(y = y, a = a, x = x, ymin = 0, ymax = 1, outfam = binomial(),
-    #                  treatfam = binomial(), model = "x", eps = eps, delta = 1,
-    #                  nsplits = 5, do_mult_boot = TRUE, B = 10000,
-    #                  do_eps_zero = FALSE, nuis_fns = NULL, alpha = alpha,
-    #                  do_rearrange = FALSE, sl.lib = sl.lib)
-    
     tmp <- get_bound(y = df$y, a = df$a, x = df[, c("x1", "x2")], ymin = 0,
                      ymax = 1, outfam = NULL, treatfam = NULL, model = "x",
                      eps = eps, delta = 1, nsplits = NULL, do_mult_boot = TRUE,

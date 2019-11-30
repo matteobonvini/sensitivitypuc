@@ -130,17 +130,12 @@ test_that("coverage eps0 is correct using simulation from paper", {
     eps0 <- truth[1, "eps_zero"]
     der <- psiu0 * ql0
     var_eps0 <- var(psiu0 * (nu + I(glx <= ql0) * (tau-ql0) - eps0)) * der^(-2)
-    sl.lib <- c("SL.mean", "SL.glm", "SL.glm.interaction")
-    tmp <- get_bound(y = y, a = a, x = x, ymin = 0, ymax = 1, outfam = binomial(),
-                     treatfam = binomial(), model = "x", eps = eps, delta = 1,
+
+    tmp <- get_bound(y = y, a = a, x = x, ymin = 0, ymax = 1, outfam = NULL,
+                     treatfam = NULL, model = "x", eps = eps, delta = 1,
                      nsplits = 5, do_mult_boot = FALSE, B = NULL,
-                     do_eps_zero = TRUE, nuis_fns = NULL, alpha = alpha,
-                     do_rearrange = FALSE, sl.lib = sl.lib)
-    # tmp <- get_bound(y = y, a = a, x = x, ymin = 0, ymax = 1, outfam = NULL, 
-    #                  treatfam = NULL, model = "x", eps = eps, delta = 1, 
-    #                  nsplits = 5, do_mult_boot = FALSE, B = NULL, 
-    #                  do_eps_zero = TRUE, nuis_fns = nuis_fns, alpha = alpha, 
-    #                  do_rearrange = FALSE)
+                     do_eps_zero = TRUE, nuis_fns = nuis_fns, alpha = alpha,
+                     do_rearrange = FALSE)
     
     tmp <- tmp$eps_zero
     out <- c(tmp$est, tmp$ci_lo, tmp$ci_hi, tmp$var_eps0, var_eps0 / n)
