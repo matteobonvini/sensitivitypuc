@@ -9,10 +9,14 @@ get_ci(muhat, sigmahat, c)
 \arguments{
 \item{muhat}{the n x 1 vector of means}
 
-\item{sigmahat}{the variance}
+\item{sigmahat}{the nx1 vector of variances}
 
 \item{c}{the multiplier (e.g. 1.96)}
 }
+\value{
+a nx2 matrix containing lower and upper endpoints of confidence
+interval.
+}
 \description{
-get_ci constructs a Wald-type confidence interval
+\code{get_ci} constructs a Wald-type confidence interval
 }

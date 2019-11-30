@@ -23,6 +23,9 @@ If lo is a vector, truth_lo must be scalar.}
 \item{truth_hi}{a n x 1 vector containing the true values for the curve (ub)
 If hi is a vector, truth_hi must be scalar.}
 }
+\value{
+scalar equal to coverage (in %)
+}
 \description{
-coverage computes the frequentist coverage
+\code{coverage} computes the frequentist coverage (in %).
 }

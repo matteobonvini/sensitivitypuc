@@ -15,6 +15,10 @@ quantity.}
 \item{truth}{a n x 1 vector containing the true values for the curve.
 If simmat is a vector, truth must be scalar.}
 }
+\value{
+scalar equal to bias (in %)
+}
 \description{
-bias computes the bias, see Section 5 for definition
+\code{bias} computes the integrated bias (in %), see Section 4 of paper for 
+definition.
 }

@@ -2,7 +2,8 @@
 % Please edit documentation in R/get_bound.R
 \name{get_bound}
 \alias{get_bound}
-\title{get_bound}
+\title{\title Estimation of bounds on ATE as a function of the proportion of 
+unmeasured confounding.}
 \usage{
 get_bound(y, a, x, ymin, ymax, outfam, treatfam, model = "x", eps = 0,
   delta = 0, nsplits = 5, do_mult_boot = TRUE, do_eps_zero = TRUE,
@@ -12,45 +13,47 @@ get_bound(y, a, x, ymin, ymax, outfam, treatfam, model = "x", eps = 0,
   ncluster = NULL)
 }
 \arguments{
-\item{y}{nx1 outcome vector in [0, 1]}
+\item{y}{nx1 outcome vector in [0, 1].}
 
-\item{a}{nx1 treatment received vector}
+\item{a}{nx1 treatment received vector.}
 
-\item{x}{nxp matrix of covariates}
+\item{x}{nxp \code{data.frame} of covariates.}
 
-\item{ymin}{infimum of the support of y}
+\item{ymin}{infimum of the support of y.}
 
-\item{ymax}{supremum of the support of y}
+\item{ymax}{supremum of the support of y.}
 
 \item{outfam}{family specifying the error distribution for outcome 
-regression, currently gaussian() or binomial(), should not specify link.}
+regression, currently \code{gaussian()} or \code{binomial()} supported. 
+Link should not be specified. Default is \code{gaussian()}.}
 
 \item{treatfam}{family specifying the error distribution for treatment 
-regression, currently gaussian() or binomial(), should not specify link.}
+regression, currently \code{binomial()} supported.
+Link should not be specified.}
 
 \item{model}{a string specifying the assumption placed on S when 
-computing the bounds. Currently only "x" and "xa".}
+computing the bounds. Currently only "x" (S \ind (Y, A) | X) and "xa"
+(S \ind Y | A, X).}
 
 \item{eps}{vector of arbitrary length specifying the values for the 
 proportion of confounding where the lower and upper bounds curves are 
-evaluated.}
+evaluated. Default is 0 (no unmeasured confounding).}
 
-\item{delta}{vector of arbitrary length specifying the maximum bias allowed
-for the confounded units. If delta is not equal to 1, then we use a plug-in
-estimator.}
+\item{delta}{vector of arbitrary length specifyin the values of delta used
+to bound maximal confounding among S = 0 units. Default is delta = 1, which 
+imposes no assumption if the outcome Y is bounded.}
 
-\item{nsplits}{number of splits for the cross-fitting (default=5)}
+\item{nsplits}{number of splits for the cross-fitting. Default is 5.}
 
 \item{do_mult_boot}{boolean for whether uniform bands via the multiplier 
-bootstrap need to computed. Default is do_mult_boot=TRUE if delta = 1. If 
-delta is not equal to 1, then pointwise coverage of the curves is computed.}
+bootstrap need to computed. Default is do_mult_boot=TRUE.}
 
 \item{do_eps_zero}{boolean for whether estimate of espilon_zero shoul be
-computed (default is do_eps_zero=TRUE)}
+computed. Default is do_eps_zero=TRUE.}
 
-\item{alpha}{confidence level, default is 0.05}
+\item{alpha}{confidence level. Default is 0.05.}
 
-\item{B}{number of simulated radamacher random variables for unif bands.}
+\item{B}{number of rademacher rvs sampled. Default is 10000.}
 
 \item{nuis_fns}{Optional. A nx4 matrix specifying the estimated regression
 functions evaluated at the observed x, columns should be named: pi0, pi1, 
@@ -58,9 +61,9 @@ mu1, mu0. Default is NULL so that regressions are estimated using the
 SuperLearner via cross-fitting.}
 
 \item{plugin}{boolean for whether the estimator for the bounds is of plug-in
-type (ensuring monotonicity in epsilon): uses g(etahat) rather than its
-estimator based on influence functions when computing term that multiplies 
-the indicator. See manuscript (g(etahat) instead of tauhat).}
+type: uses g(etahat) rather than its estimator based on influence functions 
+when computing term that multiplies the indicator.  So g(etahat) instead of 
+tauhat.}
 
 \item{do_rearrange}{bollean for whether the precedure by Chernozhukov et al
 (2008) should be applied to the estimators of the bounds and the CIs.}
@@ -69,6 +72,115 @@ the indicator. See manuscript (g(etahat) instead of tauhat).}
 
 \item{ncluster}{number of clusters used if parallel computing is used.}
 }
+\value{
+A list containing
+\item{bounds} a length(eps)x12xlength(delta) array, where, for each eps and 
+delta, it has the estimates of lower bound (\code{lb}), upper bound
+(\code{ub}), lower uniform band for lower bound (\code{ci_lb_lo_unif}), 
+upper uniform band for lower bound  (\code{ci_lb_hi_unif}), 
+lower uniform band for upper bound (\code{ci_ub_lo_unif}), 
+upper uniform band for upper bound  (\code{ci_ub_hi_unif}),
+lower pointwise band for lower bound (\code{ci_lb_lo_pt}), 
+upper pointwise band for lower bound  (\code{ci_lb_hi_pt}), 
+lower pointwise band for upper bound (\code{ci_ub_lo_pt}), 
+upper pointwise band for upper bound  (\code{ci_ub_hi_pt}), 
+lower confidence band using Imbens & Manski (2004) procedure 
+(\code{ci_im04_lo}), upper confidence band using Imbens & Manski (2004) 
+procedure(\code{ci_im04_hi}).
+\item \code{var_ub} estimate of the variance of the upper bound curve as fn 
+of eps.
+\item \code{var_lb} estimate of the variance of the lower bound curve as fn 
+of eps.
+\item \code{eps_zero} a length(delta)x5 \code{data.frame} with values of 
+delta, estimate of eps0, max(0, ci_lo), min(1, ci_hi), variance of estimate 
+of eps0.
+\item \code{q_lb} estimates of eps-quantile of g(etab) for lower bound.
+\item \code{q_ub} estimates of (1-eps)-quantile of g(etab) for upper bound.
+\item \code{lambda_lb} a n x length(eps) x length(delta) array containing 
+the indicator ghatmat <= q, where q is eps-quantile of ghatmat and 
+ghatmat is g(eta) for lower bound.
+\item \code{lambda_ub} a n x length(eps) x length(delta) array containing 
+the indicator ghatmat > q, where q is (1-eps)-quantile of ghatmat and 
+ghatmat is g(eta) for upper bound.
+\item \code{ifvals_lb} a n x length(eps) x length(delta) array containing 
+the influence functions for lower bound evaluated at the observed X as a 
+function of epsilon and delta. 
+\item \code{ifvals_ub}  a n x length(eps) x length(delta) array containing 
+the influence functions for upper bound evaluated at the observed X as a 
+function of epsilon and delta.
+\item \code{nuis_fns} a nx4 matrix containing estimates of E(Y|A = 0, X), 
+E(Y|A = 1, X), P(A = 0|X), and P(A = a|X) evaluated at the observed values 
+of X.
+\item \code{nuhat} a length(y)x1 matrix containing the influence function 
+values at each observed X of the parameter E(E(Y|A=1, X) - E(Y|A=0, X)).
+\item \code{glhat} a n x length(delta) matrix containing g(eta) for lower 
+bound.
+\item \code{guhat} a n x length(delta) matrix containing g(eta) for upper 
+bound.
+\item \code{tauhat_lb} a length(y)x1 matrix containing the influence function
+ values at each observed X of the parameter E(g(eta)) with g(eta) for the 
+ lower bound. 
+\item \code{tauhat_ub} a length(y)x1 matrix containing the influence function
+ values at each observed X of the parameter E(g(eta)) with g(eta) for the 
+ upper bound. 
+\item \code{phibar_lb} a n x length(eps) x length(delta) array containing
+values for \code{ifvals_lb} - \code{lambda_lb} * \code{q_lb}
+\item \code{phibar_ub} a n x length(eps) x length(delta) array containing
+values for \code{ifvals_ub} - \code{lambda_ub} * \code{q_ub}
+\item \code{mult_calpha_lb} a scalar calpha equal to the multiplier 
+used to construct uniform bands for the lower bound of the form psi(eps) \pm 
+calpha * sigma(eps). 
+\item \code{mult_calpha_ub} a scalar calpha equal to the multiplier 
+used to construct uniform bands for the upper bound of the form psi(eps) \pm 
+calpha * sigma(eps). 
+\item \code{im04_calpha} a scalar equal to the multiplier used to construct 
+the confidence interval for partially identified ATE as in Imbens & Manski 
+(2004).
+}
 \description{
-get_bound is the main function to estimate the lower and upper bounds curves.
+\code{get_bound} is the main function to estimate the lower and 
+upper bounds curves as a function of eps, the proportion of 
+unmeasured confounding.
+}
+\section{Details}{
+
+As done in the paper, one can see that g(eta) for the lower bound is equal to
+g(eta) for the upper bound minus delta * (ymax - ymin). Therefore the IFs for
+E(g(eta)) follows the same relation. They are keep separated just for code
+clarity.
+}
+
+\examples{
+n <- 1000
+eps <- seq(0, 1, 0.001)
+delta <- c(0.25, 0.5, 1)
+a <- rbinom(n, 1, 0.5)
+x <- as.data.frame(matrix(rnorm(2*n), ncol = 2, nrow = n))
+ymin <- 0
+ymax <- 1
+y <- runif(n, ymin, ymax)
+res <- get_bound(y = y, a = a, x = x, ymin = ymin, ymax = ymax, 
+                 outfam = gaussian(),  treatfam = binomial(), 
+                 model = "x", eps = eps, delta = delta, 
+                 do_mult_boot = TRUE, do_eps_zero = TRUE, nsplits = 5, 
+                 alpha = 0.05, B = 1000, sl.lib = "SL.glm")
+print(res$eps_zero)
+print(head(res$bounds[,,1]))
+
+}
+\references{
+Imbens, G. W., & Manski, C. F. (2004). Confidence intervals for 
+partially identified parameters. \emph{Econometrica}, 72(6), 1845-1857.
+
+Van der Laan, M. J., Polley, E. C., & Hubbard, A. E. (2007). 
+Super learner. 
+\emph{Statistical applications in genetics and molecular biology}, 6(1).
+
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, 
+E., Hansen, C., & Newey, W. K. (2016). Double machine learning for treatment 
+and causal parameters (No. CWP49/16). \emph{cemmap working paper}.
+
+Kennedy, E. H. (2019). Nonparametric causal effects based on 
+incremental propensity score interventions. \emph{Journal of the American 
+Statistical Association}, 114(526), 645-656.
 }

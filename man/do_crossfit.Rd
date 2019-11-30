@@ -2,7 +2,7 @@
 % Please edit documentation in R/do_crossfit.R
 \name{do_crossfit}
 \alias{do_crossfit}
-\title{do_crossfit}
+\title{Estimation of regression functions using cross-fitting}
 \usage{
 do_crossfit(y, a, x, ymin, ymax, outfam = gaussian(),
   treatfam = binomial(), nsplits = 5, do_parallel = FALSE,
@@ -14,24 +14,62 @@ do_crossfit(y, a, x, ymin, ymax, outfam = gaussian(),
 
 \item{a}{nx1 treatment received vector}
 
-\item{x}{nxp matrix of covariates}
+\item{x}{nxp \code{data.frame} of covariates. Variable must be named.}
 
 \item{outfam}{family specifying the error distribution for outcome 
-regression, currently gaussian() or binomial(), should not specify link.}
+regression, currently \code{gaussian()} or \code{binomial()} supported. 
+Link should not be specified. Default is \code{gaussian()}.}
 
 \item{treatfam}{family specifying the error distribution for treatment 
-regression, currently gaussian() or binomial(), should not specify link.}
+regression, currently \code{binomial()} supported.
+Link should not be specified.}
 
 \item{nsplits}{number of splits for the cross-fitting.}
 
-\item{do_parallel}{boolean for whether parallel computing should be used}
+\item{do_parallel}{boolean for whether parallel computing should be used.
+Default is FALSE.}
 
 \item{ncluster}{number of clusters used if parallel computing is used.}
 
-\item{sl.lib}{vector specifying which libraries to use for the SL.}
+\item{sl.lib}{character vector specifying which libraries to use for the SL.}
+}
+\value{
+A nx4 matrix containing estimates of E(Y|A = 0, X), E(Y|A = 1, X),
+P(A = 0|X), and P(A = a|X) evaluated at the observed values of X.
 }
 \description{
-do_crossfit estimates the nuisance regression functions via cross-fitting.
-This allows the user to avoid imposing empirical process conditions on these
-functions, while still attaining fast rates of convergence.
+\code{do_crossfit} estimates the nuisance regression functions 
+using the SuperLearner and via cross-fitting. Cross-fitting allows the user 
+to avoid imposing empirical process conditions on these functions, 
+while still attaining, when possible, fast rates of convergence.
+}
+\section{Details}{
+ 
+If the SuperLearner returns an error, a GLM is fitted instead. In this
+case the user is suggested to choose some other method of estimation and then
+pass the estimates as arguments to other functions.
+}
+
+\examples{
+n <- 500
+x <- data.frame(x1 = rnorm(n), x2 = runif(n))
+a <- rbinom(n, 1, pnorm(x$x1))
+y <- 2 + x$x1 - x$x2 + rnorm(n)
+fits <- do_crossfit(y, a, x, min(y), max(y), outfam = gaussian(), 
+                    treatfam = binomial(), nsplits = 5, 
+                    sl.lib = c("SL.mean", "SL.glm", "SL.gam"))
+head(fits)
+
+}
+\references{
+Van der Laan, M. J., Polley, E. C., & Hubbard, A. E. (2007). 
+Super learner. 
+\emph{Statistical applications in genetics and molecular biology}, 6(1).
+
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, 
+E., Hansen, C., & Newey, W. K. (2016). Double machine learning for treatment 
+and causal parameters (No. CWP49/16). \emph{cemmap working paper}.
+}
+\seealso{
+\code{\link{get_muahat}} and \code{\link{get_piahat}}.
 }

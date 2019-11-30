@@ -2,18 +2,21 @@
 % Please edit documentation in R/utils.R
 \name{rmse}
 \alias{rmse}
-\title{rmse}
+\title{root-n-rmse}
 \usage{
 rmse(simmat, truth, n)
 }
 \arguments{
-\item{simmat}{a neps x nsim matrix, where neps is the number of epsilon points used
-in evaluation and nsim is the number of simulations}
+\item{simmat}{a neps x nsim matrix, where neps is the number of epsilon 
+points used in evaluation and nsim is the number of simulations.}
 
-\item{truth}{a neps x 1 vector containing the true values for the curve}
+\item{truth}{a neps x 1 vector containing the true values for the curve.}
 
-\item{n}{is the sample size}
+\item{n}{sample size.}
+}
+\value{
+scalar equal to the \sqrt(n) * RMSE.
 }
 \description{
-rmse computes RMSE, see Section 5 in paper
+\code{rmse} computes RMSE, see Section 4 in paper
 }
