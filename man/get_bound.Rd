@@ -73,7 +73,8 @@ tauhat.}
 \item{ncluster}{number of clusters used if parallel computing is used.}
 
 \item{show_progress}{boolean for whether progress bar in estimating 
-regression functions should be shown. Default is FALSE.}
+regression functions should be shown. Default is FALSE. Currently, only 
+available if do_parallel is FALSE.}
 }
 \value{
 A list containing
@@ -186,4 +187,8 @@ and causal parameters (No. CWP49/16). \emph{cemmap working paper}.
 Kennedy, E. H. (2019). Nonparametric causal effects based on 
 incremental propensity score interventions. \emph{Journal of the American 
 Statistical Association}, 114(526), 645-656.
+
+Chernozhukov, V., Fernandez-Val, I., & Galichon, A. (2009). 
+Improving point and interval estimators of monotone functions by 
+rearrangement. \emph{Biometrika}, 96(3), 559-575.
 }

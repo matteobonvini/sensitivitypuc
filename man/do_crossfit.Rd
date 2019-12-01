@@ -34,7 +34,7 @@ Default is FALSE.}
 \item{sl.lib}{character vector specifying which libraries to use for the SL.}
 
 \item{show_progress}{boolean for whether progress bar should be shown.
-Default is FALSE.}
+Default is FALSE. Currently, only available if do_parallel is FALSE.}
 }
 \value{
 A nx4 matrix containing estimates of E(Y|A = 0, X), E(Y|A = 1, X),
