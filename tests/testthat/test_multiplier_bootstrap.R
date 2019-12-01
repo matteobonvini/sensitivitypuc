@@ -92,8 +92,8 @@ test_that("uniform coverage is correct", {
   
   check_multiplier(sims[, , "r", ], alpha)
   check_multiplier(sims[, , "nr", ], alpha)
-  check_cvg(sims_r, psil, psiu, alpha)
-  check_cvg(sims_nr, psil, psiu, alpha)
+  check_cvg(sims[, , "r", ], psil, psiu, alpha)
+  check_cvg(sims[, , "nr", ], psil, psiu, alpha)
 })
 
 test_that("uniform coverage is correct using truth in simulation paper", {
