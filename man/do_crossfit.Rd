@@ -7,7 +7,7 @@
 do_crossfit(y, a, x, ymin, ymax, outfam = gaussian(),
   treatfam = binomial(), nsplits = 5, do_parallel = FALSE,
   ncluster = NULL, sl.lib = c("SL.earth", "SL.gam", "SL.glm",
-  "SL.mean", "SL.ranger", "SL.glm.interaction"))
+  "SL.mean", "SL.ranger", "SL.glm.interaction"), show_progress = FALSE)
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}
@@ -32,6 +32,9 @@ Default is FALSE.}
 \item{ncluster}{number of clusters used if parallel computing is used.}
 
 \item{sl.lib}{character vector specifying which libraries to use for the SL.}
+
+\item{show_progress}{boolean for whether progress bar should be shown.
+Default is FALSE.}
 }
 \value{
 A nx4 matrix containing estimates of E(Y|A = 0, X), E(Y|A = 1, X),

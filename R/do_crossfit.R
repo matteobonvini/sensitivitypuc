@@ -19,6 +19,8 @@
 #' Default is FALSE.
 #' @param ncluster number of clusters used if parallel computing is used.
 #' @param sl.lib character vector specifying which libraries to use for the SL.
+#' @param show_progress boolean for whether progress bar should be shown.
+#' Default is FALSE. Currently, only available if do_parallel is FALSE.
 #' 
 #' @section Details: 
 #' If the SuperLearner returns an error, a GLM is fitted instead. In this
@@ -53,7 +55,12 @@ do_crossfit <- function(y, a, x, ymin, ymax, outfam = gaussian(),
                         treatfam = binomial(), nsplits = 5, do_parallel = FALSE,
                         ncluster = NULL,
                         sl.lib = c("SL.earth","SL.gam","SL.glm", "SL.mean", 
-                                   "SL.ranger","SL.glm.interaction")) {
+                                   "SL.ranger","SL.glm.interaction"),
+                        show_progress = FALSE) {
+  
+  if(do_parallel & show_progress) {
+    stop("Currently, showing progress is only available if do_parallel = FALSE")
+  }
   
   if(treatfam$family != "binomial") {
     stop("Currently only family = binomial() is supported for treatment model.")
@@ -65,80 +72,77 @@ do_crossfit <- function(y, a, x, ymin, ymax, outfam = gaussian(),
   train_idx <- lapply(1:nsplits, function(x) which(x != s))
   test_idx <- lapply(1:nsplits, function(x) which(x == s))
   
-  if(do_parallel & nsplits > 1) {
-
+  tmp <- function(i, y, a, xmat, train_idx, test_idx, outfam, treatfam, ymin,
+                  ymax, sl.lib) {
+    ## Temporary function to avoid repeating code, i indicates the split and
+    ## identifies the train set indices and the test set indices. 
+    train <- train_idx[[i]]
+    test <- test_idx[[i]]
+    ytrain <- y[train]
+    atrain <- a[train]
+    xtrain <- xmat[train, , drop = FALSE]
+    xtest <- xmat[test, , drop = FALSE]
+    nt <- length(test)
+    
+    mu0hat <- get_muahat(y = ytrain, a = atrain, x = xtrain, 
+                         newx = xtest, aval = 0, 
+                         sl.lib = sl.lib, family = outfam, 
+                         ymin = ymin, ymax = ymax)
+    
+    mu1hat <- get_muahat(y = ytrain, a = atrain, x = xtrain, 
+                         newx = xtest, aval = 1, 
+                         sl.lib = sl.lib, family = outfam, 
+                         ymin = ymin, ymax = ymax)
+    
+    pi1hat <- get_piahat(a = atrain, x = xtrain, newx = xtest, 
+                         sl.lib = sl.lib, family = treatfam)
+    
+    pi0hat <- 1 - pi1hat
+    
+    res <- c(mu0hat, mu1hat, pi0hat, pi1hat, test)
+    matrix(res, ncol = 5, nrow = nt, byrow = FALSE,
+           dimnames=list(NULL, c("mu0", "mu1", "pi0", "pi1", 
+                                 "test_idx")))
+  }
+  
+  if(do_parallel) {
+    ## Use dorng so that it easy to set the seed and reproduce the results.
+    ## Issue is that I don't know how to easily show progress bar with dorng.
     cl <- makeCluster(ncluster)
     registerDoParallel(cl)
     
     out <- foreach(i = 1:nsplits, .combine = rbind, 
                    .packages='sensitivitypuc') %dorng% {
-                     
-                     train <- train_idx[[i]]
-                     test <- test_idx[[i]]
-                     ytrain <- y[train]
-                     atrain <- a[train]
-                     xtrain <- x[train, , drop = FALSE]
-                     xtest <- x[test, , drop = FALSE]
-                     nt <- length(test)
-                     
-                     mu0hat <- get_muahat(y = ytrain, a = atrain, x = xtrain, 
-                                          newx = xtest, aval = 0, 
-                                          sl.lib = sl.lib, family = outfam, 
-                                          ymin = ymin, ymax = ymax)
-                     
-                     mu1hat <- get_muahat(y = ytrain, a = atrain, x = xtrain, 
-                                          newx = xtest, aval = 1, 
-                                          sl.lib = sl.lib, family = outfam, 
-                                          ymin = ymin, ymax = ymax)
-                     
-                     pi1hat <- get_piahat(a = atrain, x = xtrain, newx = xtest, 
-                                          sl.lib = sl.lib, family = treatfam)
-                     
-                     pi0hat <- 1 - pi1hat
-                     
-                     res <- c(mu0hat, mu1hat, pi0hat, pi1hat, test)
-                     matrix(res, ncol = 5, nrow = nt, byrow = FALSE,
-                            dimnames=list(NULL, c("mu0", "mu1", "pi0", "pi1", 
-                                                  "test_idx")))
+                     tmp(i, y = y, xmat = x, 
+                         a = a, train_idx = train_idx, 
+                         test_idx = test_idx, 
+                         outfam = outfam, 
+                         treatfam = treatfam, ymin = ymin, 
+                         ymax = ymax, sl.lib = sl.lib)
                    }
-    # 5th column contains indices for the test set, okay remove it after sorting
-    out <- out[order(out[, 5]), -5]
     stopCluster(cl)
-    
   } else {
+    if(show_progress) {
+      res <- pbapply::pblapply(1:nsplits, tmp, y = y, xmat = x, 
+                               a = a, train_idx = train_idx, 
+                               test_idx = test_idx, 
+                               outfam = outfam, 
+                               treatfam = treatfam, ymin = ymin, 
+                               ymax = ymax, sl.lib = sl.lib)
+      
+    } else {
+      res <- lapply(1:nsplits, tmp, y = y, xmat = x, 
+                    a = a, train_idx = train_idx, 
+                    test_idx = test_idx, 
+                    outfam = outfam, treatfam = treatfam, 
+                    ymin = ymin, ymax = ymax, sl.lib = sl.lib)
+    }
     
-    mu0hat <- mu1hat <- pi0hat <- pi1hat <- rep(NA, n)
-    
-    for (i in 1:nsplits) {
-      
-      train <- train_idx[[i]]
-      test <- test_idx[[i]]
-      
-      if (nsplits == 1) {
-        train <- test
-      }
-      
-      ytrain <- y[train]
-      atrain <- a[train]
-      xtrain <- x[train, , drop = FALSE]
-      xtest <- x[test, , drop = FALSE]
-      
-      mu0hat[test] <- get_muahat(y = ytrain, a = atrain, x = xtrain, 
-                                 newx = xtest, aval = 0, sl.lib = sl.lib, 
-                                 family = outfam, ymin = ymin, ymax = ymax)
-      mu1hat[test] <- get_muahat(y = ytrain, a = atrain, x = xtrain, 
-                                 newx = xtest, aval = 1, sl.lib = sl.lib, 
-                                 family = outfam, ymin = ymin, ymax = ymax)
-      pi1hat[test] <- get_piahat(a = atrain, x = xtrain, newx = xtest, 
-                                 sl.lib = sl.lib, family = treatfam)
-      pi0hat[test] <- 1 - pi1hat[test]
-      
-    } 
-    
-    res <- c(mu0hat, mu1hat, pi0hat, pi1hat)
-    out <- matrix(res, ncol = 4, nrow = n,  byrow = FALSE, 
-                  dimnames = list(NULL, c("mu0", "mu1", "pi0", "pi1")))
+    out <- do.call("rbind", res)
   }
-  
+  # "test_idx" contains indices for the test set, okay remove it after sorting
+  # Need to keep track of test indices and sort so that order of observations
+  # remains intact. 
+  out <- out[order(out[, 5]), which(colnames(out) != "test_idx")]
   return(out)
-}
+} 

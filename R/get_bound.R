@@ -43,6 +43,9 @@
 #' (2008) should be applied to the estimators of the bounds and the CIs.
 #' @param do_parallel boolean for whether parallel computing should be used
 #' @param ncluster number of clusters used if parallel computing is used.
+#' @param show_progress boolean for whether progress bar in estimating 
+#' regression functions should be shown. Default is FALSE. Currently, only 
+#' available if do_parallel is FALSE.
 #' 
 #' @return A list containing
 #' \item{bounds} a length(eps)x12xlength(delta) array, where, for each eps and 
@@ -142,6 +145,9 @@
 #' @references Kennedy, E. H. (2019). Nonparametric causal effects based on 
 #' incremental propensity score interventions. \emph{Journal of the American 
 #' Statistical Association}, 114(526), 645-656.
+#' @references Chernozhukov, V., Fernandez-Val, I., & Galichon, A. (2009). 
+#' Improving point and interval estimators of monotone functions by 
+#' rearrangement. \emph{Biometrika}, 96(3), 559-575.
 #' 
 #' @export
 
@@ -151,13 +157,15 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
                       nuis_fns = NULL, plugin = FALSE, do_rearrange = FALSE,
                       sl.lib = c("SL.earth","SL.gam","SL.glm", "SL.mean", 
                                  "SL.ranger", "SL.glm.interaction"),
-                      do_parallel = FALSE, ncluster = NULL) {
+                      do_parallel = FALSE, ncluster = NULL, 
+                      show_progress = FALSE) {
   
   if(is.null(nuis_fns)) {
     nuis_fns <- do_crossfit(y = y, a = a, x = x, outfam = outfam, 
                             treatfam = treatfam, nsplits = nsplits, 
                             sl.lib = sl.lib, ymin = ymin, ymax = ymax, 
-                            do_parallel = do_parallel, ncluster = ncluster)
+                            do_parallel = do_parallel, ncluster = ncluster,
+                            show_progress = show_progress)
   }
   pi0hat <- nuis_fns[, "pi0"]
   pi1hat <- nuis_fns[, "pi1"]

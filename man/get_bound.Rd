@@ -10,7 +10,7 @@ get_bound(y, a, x, ymin, ymax, outfam, treatfam, model = "x", eps = 0,
   alpha = 0.05, B = 10000, nuis_fns = NULL, plugin = FALSE,
   do_rearrange = FALSE, sl.lib = c("SL.earth", "SL.gam", "SL.glm",
   "SL.mean", "SL.ranger", "SL.glm.interaction"), do_parallel = FALSE,
-  ncluster = NULL)
+  ncluster = NULL, show_progress = FALSE)
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1].}
@@ -71,6 +71,9 @@ tauhat.}
 \item{do_parallel}{boolean for whether parallel computing should be used}
 
 \item{ncluster}{number of clusters used if parallel computing is used.}
+
+\item{show_progress}{boolean for whether progress bar in estimating 
+regression functions should be shown. Default is FALSE.}
 }
 \value{
 A list containing

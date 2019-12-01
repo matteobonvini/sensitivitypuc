@@ -56,7 +56,7 @@ test_that("width of bounds always in [0, 1]", {
                      outfam = gaussian(),  treatfam = binomial(), 
                      model = model, eps = c(0, 1), delta = delta_seq, 
                      do_mult_boot = FALSE, do_eps_zero = FALSE, nsplits = 1, 
-                     alpha = 0.05, B = NULL, plugin = TRUE,
+                     alpha = 0.05, B = NULL, do_rearrange = TRUE,
                      sl.lib = c("SL.mean", "SL.glm"))$bounds
     
     length_bounds <- res[, "ub", ] - res[, "lb", ]
@@ -97,7 +97,7 @@ test_that("width is increasing in epsilon", {
                      outfam = gaussian(),  treatfam = binomial(), 
                      model = model, eps = eps_seq, delta = delta_seq, 
                      do_mult_boot = FALSE, do_eps_zero = FALSE, nsplits = 1, 
-                     alpha = 0.05, B = NULL, plugin = TRUE,
+                     alpha = 0.05, B = NULL, do_rearrange = TRUE,
                      sl.lib = c("SL.mean", "SL.glm"))$bounds
     
     length_bounds <- res[, "ub", ] - res[, "lb", ]
