@@ -4,7 +4,7 @@
 #' using the SuperLearner and via cross-fitting. Cross-fitting allows the user 
 #' to avoid imposing empirical process conditions on these functions, 
 #' while still attaining, when possible, fast rates of convergence.
-#' 
+#' @importFrom doRNG %dorng%
 #' @param y nx1 outcome vector in [0, 1]
 #' @param a nx1 treatment received vector
 #' @param x nxp \code{data.frame} of covariates. Variable must be named.

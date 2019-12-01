@@ -81,6 +81,7 @@ get_eps_zero <- function(n, eps, lb, ub, ql, qu, ifvals_lb, ifvals_ub,
   find_zero <- function(x) { which.min(abs(x)) }
   idx <- apply(lb * ub, 2, find_zero)
   ndelta <- length(delta)
+  
   est <- eps[idx]
   lb_zero <- diag(as.matrix(lb[idx, ]))
   ub_zero <- diag(as.matrix(ub[idx, ]))
@@ -91,13 +92,13 @@ get_eps_zero <- function(n, eps, lb, ub, ql, qu, ifvals_lb, ifvals_ub,
   if_u <-  sapply(1:ndelta, function(x) { ifvals_ub[, idx[x], x] } )
   
   phi_zero <- sweep(if_l, 2, ub_zero, "*") + sweep(if_u, 2, lb_zero, "*")
-  der <- (ub_zero*ql_zero + lb_zero*qu_zero)^(-2)
+  der <- (ub_zero * ql_zero + lb_zero * qu_zero) ^ (-2)
   vars <- apply(phi_zero, 2, var) / n
   var_eps0 <- der * vars
   se_eps_zero <- sqrt(var_eps0)
   
-  ci_lo <- est - qnorm(1-alpha/2) * se_eps_zero
-  ci_hi <- est + qnorm(1-alpha/2) * se_eps_zero
+  ci_lo <- est - qnorm(1 - alpha / 2) * se_eps_zero
+  ci_hi <- est + qnorm(1 - alpha / 2) * se_eps_zero
   ci_lo[ci_lo < 0] <- 0
   ci_hi[ci_hi > 1] <- 1
   

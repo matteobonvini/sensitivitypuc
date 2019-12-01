@@ -172,14 +172,14 @@ if_tau <- function(y, a, ymin, ymax, pi0, pi1, mu0, mu1, upper = FALSE) {
   
   if(!upper) {
     # IF for E{ pi(x) * (ymax - mu0(x)) }
-    if1 <- a * ymax - (pi1/pi0 * (1-a) * (y-mu0) + a * mu0) 
+    if1 <- a * ymax - (pi1 / pi0 * (1 - a) * (y - mu0) + a * mu0) 
     # IF for E{ (1-pi(x)) * (ymin - mu1(x)) }
-    if2 <- (1-a) * ymin - (pi0/pi1 * a * (y-mu1) + (1-a) * mu1)
+    if2 <- (1 - a) * ymin - (pi0 / pi1 * a * (y - mu1) + (1 - a) * mu1)
   } else {
     # IF for E{ pi(x) * (ymin - mu0(x)) }
-    if1 <- a * ymin - (pi1/pi0 * (1-a) * (y-mu0) + a * mu0) 
+    if1 <- a * ymin - (pi1 / pi0 * (1 - a) * (y - mu0) + a * mu0) 
     # IF for E{ (1-pi(x)) * (ymax - mu1(x)) }
-    if2 <- (1-a) * ymax - (pi0/pi1 * a * (y-mu1) + (1-a) * mu1)
+    if2 <- (1 - a) * ymax - (pi0 / pi1 * a * (y - mu1) + (1 - a) * mu1)
   }
   
   return(as.matrix(if2 - if1))
