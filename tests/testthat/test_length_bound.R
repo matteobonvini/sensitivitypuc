@@ -34,6 +34,7 @@ test_that("length at delta/eps in {0, 1} is {0, 1}", {
     ymax <- ymin + runif(1, 0, 200)
     width_test(ymin, ymax, "x")
     width_test(ymin, ymax, "xa")
+    
   }
   
   pbreplicate(nsim, width_test_wrapper())
@@ -116,6 +117,7 @@ test_that("width is increasing in epsilon", {
     
     mono_test(ymin, ymax, "x")
     mono_test(ymin, ymax, "xa")
+    
   }
   
   pbreplicate(nsim, mono_test_wrapper())

@@ -5,7 +5,7 @@ require(truncnorm)
 require(cubature)
 
 ## Global parameters ##
-tau <- 0.05
+effect <- 0.05
 xlb <- -2
 xub <- 2
 
@@ -37,12 +37,12 @@ pix <- function(x1) {
 
 # P(Y^0 = 1 | X, U, S, A)
 expect_y0 <- function(x1, x2, u){
-  return(0.25 + 0.5 * pnorm(x1 + x2) - 0.5 * tau - 0.1 * u)
+  return(0.25 + 0.5 * pnorm(x1 + x2) - 0.5 * effect - 0.1 * u)
 }
 
 # P(Y^1 = 1 | X, U, S, A)
 expect_y1 <- function(x1, x2, u){
-  return(0.25 + 0.5 * pnorm(x1 + x2) + 0.5 * tau - 0.1 * u)
+  return(0.25 + 0.5 * pnorm(x1 + x2) + 0.5 * effect - 0.1 * u)
 }
 
 # P(Y = 1 | X, A = 0)

@@ -7,7 +7,7 @@ require(uniftest)
 check_result <- function(sims, eps0_true, alpha, n) {
   # Check that coverage is correct and the the z-scores are correct
   cvg <- coverage(sims["eps0_lo", ], sims["eps0_hi", ], eps0_true, eps0_true)
-  print(paste0("Coverage is ", cvg, "%"))
+  print(paste0("Coverage is ", cvg, "% when truth is ", 100*(1-alpha), "%"))
   eps0 <- sims["eps0", ]
   bias0 <- bias(sims["eps0", ], eps0_true)
   
@@ -112,17 +112,18 @@ test_that("coverage eps0 is correct using simulation from paper", {
     nuis_fns[, "mu0"] <- mu0x(df$x1, df$x2)
     nuis_fns[, "pi1"] <- pix(df$x1)
     nuis_fns[, "pi0"] <- 1 - nuis_fns[, "pi1"]
-    
+
     y <- df$y; a <- df$a; x <- df[, c("x1", "x2")]
-    
+
     piax <- a*nuis_fns[, "pi1"] + (1-a)*nuis_fns[, "pi0"]
     muax <- a*nuis_fns[, "mu1"] + (1-a)*nuis_fns[, "mu0"]
     nu <- (2*a-1) * (y-muax) / piax + nuis_fns[, "mu1"] - nuis_fns[, "mu0"]
-    tau <- (1-2*a) * (y-muax) / piax * (1-piax) + a*nuis_fns[, "mu0"] + 
-      (1-a)*(1-nuis_fns[, "mu1"]) 
-    gux <- nuis_fns[, "pi0"] * (1-nuis_fns[, "mu1"]) + nuis_fns[, "pi1"] * nuis_fns[, "mu0"]
+    tau <- (1-2*a) * (y-muax) / piax * (1-piax) + a*nuis_fns[, "mu0"] +
+      (1-a)*(1-nuis_fns[, "mu1"])
+    gux <- nuis_fns[, "pi0"] * (1-nuis_fns[, "mu1"]) +
+      nuis_fns[, "pi1"] * nuis_fns[, "mu0"]
     glx <- gux - 1
-    
+
     psiu0 <- truth[1, "ub0"]
     psil0 <- truth[1, "lb0"]
     ql0 <- truth[1, "ql0"]
@@ -136,7 +137,7 @@ test_that("coverage eps0 is correct using simulation from paper", {
                      nsplits = 5, do_mult_boot = FALSE, B = NULL,
                      do_eps_zero = TRUE, nuis_fns = nuis_fns, alpha = alpha,
                      do_rearrange = FALSE)
-    
+
     tmp <- tmp$eps_zero
     out <- c(tmp$est, tmp$ci_lo, tmp$ci_hi, tmp$var_eps0, var_eps0 / n)
     names(out) <-  outnames
