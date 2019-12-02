@@ -69,8 +69,12 @@ do_crossfit <- function(y, a, x, ymin, ymax, outfam = gaussian(),
   n <- length(y)
   s <- sample(rep(1:nsplits, ceiling(n/nsplits))[1:n])
   
-  train_idx <- lapply(1:nsplits, function(x) which(x != s))
-  test_idx <- lapply(1:nsplits, function(x) which(x == s))
+  if(nsplits == 1) {
+    train_idx <- test_idx <- list(1:n)
+  } else {
+    train_idx <- lapply(1:nsplits, function(x) which(x != s))
+    test_idx <- lapply(1:nsplits, function(x) which(x == s))
+  }
   
   tmp <- function(i, y, a, xmat, train_idx, test_idx, outfam, treatfam, ymin,
                   ymax, sl.lib) {
@@ -100,9 +104,10 @@ do_crossfit <- function(y, a, x, ymin, ymax, outfam = gaussian(),
     pi0hat <- 1 - pi1hat
     
     res <- c(mu0hat, mu1hat, pi0hat, pi1hat, test)
-    matrix(res, ncol = 5, nrow = nt, byrow = FALSE,
-           dimnames=list(NULL, c("mu0", "mu1", "pi0", "pi1", 
-                                 "test_idx")))
+    out <- matrix(res, ncol = 5, nrow = nt, byrow = FALSE,
+                  dimnames=list(NULL, c("mu0", "mu1", "pi0", "pi1", 
+                                        "test_idx")))
+    return(out)
   }
   
   if(do_parallel) {
