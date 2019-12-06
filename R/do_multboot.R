@@ -20,7 +20,7 @@
 #' @param B number of rademacher rvs sampled. Default is 10000.
 #' 
 #' @return a scalar calpha equal to the multiplier used to construct bands of 
-#' the form psi(eps) \pm calpha * sigma(eps). 
+#' the form psi(eps) \eqn{\pm} calpha * sigma(eps). 
 #' 
 #' @references Kennedy, E. H. (2019). Nonparametric causal effects based on 
 #' incremental propensity score interventions. \emph{Journal of the American 

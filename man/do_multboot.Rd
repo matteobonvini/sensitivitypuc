@@ -30,7 +30,7 @@ associated with psihat.}
 }
 \value{
 a scalar calpha equal to the multiplier used to construct bands of 
-the form psi(eps) \pm calpha * sigma(eps).
+the form psi(eps) \eqn{\pm} calpha * sigma(eps).
 }
 \description{
 \code{do_multboot} is the main function to implement 

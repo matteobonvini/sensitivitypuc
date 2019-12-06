@@ -1,4 +1,4 @@
-#' \title Estimation of bounds on ATE as a function of the proportion of 
+#' @title Estimation of bounds on ATE as a function of the proportion of 
 #' unmeasured confounding.
 #' 
 #' @description \code{get_bound} is the main function to estimate the lower and 
@@ -16,8 +16,8 @@
 #' regression, currently \code{binomial()} supported.
 #' Link should not be specified.
 #' @param model a string specifying the assumption placed on S when 
-#' computing the bounds. Currently only "x" (S \ind (Y, A) | X) and "xa"
-#' (S \ind Y | A, X).
+#' computing the bounds. Currently only "x" (\eqn{S \perp (Y, A) | X)} and "xa"
+#' (\eqn{S \perp Y | A, X}).
 #' @param eps vector of arbitrary length specifying the values for the 
 #' proportion of confounding where the lower and upper bounds curves are 
 #' evaluated. Default is 0 (no unmeasured confounding).
@@ -48,7 +48,7 @@
 #' available if do_parallel is FALSE.
 #' 
 #' @return A list containing
-#' \item{bounds} a length(eps)x12xlength(delta) array, where, for each eps and 
+#' \item{\code{bounds}}{a length(eps)x12xlength(delta) array, where, for each eps and 
 #' delta, it has the estimates of lower bound (\code{lb}), upper bound
 #' (\code{ub}), lower uniform band for lower bound (\code{ci_lb_lo_unif}), 
 #' upper uniform band for lower bound  (\code{ci_lb_hi_unif}), 
@@ -60,56 +60,56 @@
 #' upper pointwise band for upper bound  (\code{ci_ub_hi_pt}), 
 #' lower confidence band using Imbens & Manski (2004) procedure 
 #' (\code{ci_im04_lo}), upper confidence band using Imbens & Manski (2004) 
-#' procedure(\code{ci_im04_hi}).
-#' \item \code{var_ub} estimate of the variance of the upper bound curve as fn 
-#' of eps.
-#' \item \code{var_lb} estimate of the variance of the lower bound curve as fn 
-#' of eps.
-#' \item \code{eps_zero} a length(delta)x5 \code{data.frame} with values of 
+#' procedure(\code{ci_im04_hi}).}
+#' \item{\code{var_ub}}{estimate of the variance of the upper bound curve as fn 
+#' of eps.}
+#' \item{\code{var_lb}}{estimate of the variance of the lower bound curve as fn 
+#' of eps.}
+#' \item{\code{eps_zero}}{a length(delta)x5 \code{data.frame} with values of 
 #' delta, estimate of eps0, max(0, ci_lo), min(1, ci_hi), variance of estimate 
-#' of eps0.
-#' \item \code{q_lb} estimates of eps-quantile of g(etab) for lower bound.
-#' \item \code{q_ub} estimates of (1-eps)-quantile of g(etab) for upper bound.
-#' \item \code{lambda_lb} a n x length(eps) x length(delta) array containing 
+#' of eps0.}
+#' \item{\code{q_lb}}{estimates of eps-quantile of g(etab) for lower bound.}
+#' \item{\code{q_ub}}{estimates of (1-eps)-quantile of g(etab) for upper bound.}
+#' \item{\code{lambda_lb}}{a n x length(eps) x length(delta) array containing 
 #' the indicator ghatmat <= q, where q is eps-quantile of ghatmat and 
-#' ghatmat is g(eta) for lower bound.
-#' \item \code{lambda_ub} a n x length(eps) x length(delta) array containing 
+#' ghatmat is g(eta) for lower bound.}
+#' \item{\code{lambda_ub}}{a n x length(eps) x length(delta) array containing 
 #' the indicator ghatmat > q, where q is (1-eps)-quantile of ghatmat and 
-#' ghatmat is g(eta) for upper bound.
-#' \item \code{ifvals_lb} a n x length(eps) x length(delta) array containing 
+#' ghatmat is g(eta) for upper bound.}
+#' \item{\code{ifvals_lb}}{a n x length(eps) x length(delta) array containing 
 #' the influence functions for lower bound evaluated at the observed X as a 
-#' function of epsilon and delta. 
-#' \item \code{ifvals_ub}  a n x length(eps) x length(delta) array containing 
+#' function of epsilon and delta.}
+#' \item{\code{ifvals_ub}}{a n x length(eps) x length(delta) array containing 
 #' the influence functions for upper bound evaluated at the observed X as a 
-#' function of epsilon and delta.
-#' \item \code{nuis_fns} a nx4 matrix containing estimates of E(Y|A = 0, X), 
+#' function of epsilon and delta.}
+#' \item{\code{nuis_fns}}{a nx4 matrix containing estimates of E(Y|A = 0, X), 
 #' E(Y|A = 1, X), P(A = 0|X), and P(A = a|X) evaluated at the observed values 
-#' of X.
-#' \item \code{nuhat} a length(y)x1 matrix containing the influence function 
-#' values at each observed X of the parameter E(E(Y|A=1, X) - E(Y|A=0, X)).
-#' \item \code{glhat} a n x length(delta) matrix containing g(eta) for lower 
-#' bound.
-#' \item \code{guhat} a n x length(delta) matrix containing g(eta) for upper 
-#' bound.
-#' \item \code{tauhat_lb} a length(y)x1 matrix containing the influence function
+#' of X.}
+#' \item{\code{nuhat}}{a length(y)x1 matrix containing the influence function 
+#' values at each observed X of the parameter E(E(Y|A=1, X) - E(Y|A=0, X)).}
+#' \item{\code{glhat}}{a n x length(delta) matrix containing g(eta) for lower 
+#' bound.}
+#' \item{\code{guhat}}{a n x length(delta) matrix containing g(eta) for upper 
+#' bound.}
+#' \item{\code{tauhat_lb}}{a length(y)x1 matrix containing the influence function
 #'  values at each observed X of the parameter E(g(eta)) with g(eta) for the 
-#'  lower bound. 
-#' \item \code{tauhat_ub} a length(y)x1 matrix containing the influence function
+#'  lower bound.}
+#' \item{\code{tauhat_ub}}{a length(y)x1 matrix containing the influence function
 #'  values at each observed X of the parameter E(g(eta)) with g(eta) for the 
-#'  upper bound. 
-#' \item \code{phibar_lb} a n x length(eps) x length(delta) array containing
-#' values for \code{ifvals_lb} - \code{lambda_lb} * \code{q_lb}
-#' \item \code{phibar_ub} a n x length(eps) x length(delta) array containing
-#' values for \code{ifvals_ub} - \code{lambda_ub} * \code{q_ub}
-#' \item \code{mult_calpha_lb} a scalar calpha equal to the multiplier 
-#' used to construct uniform bands for the lower bound of the form psi(eps) \pm 
-#' calpha * sigma(eps). 
-#' \item \code{mult_calpha_ub} a scalar calpha equal to the multiplier 
-#' used to construct uniform bands for the upper bound of the form psi(eps) \pm 
-#' calpha * sigma(eps). 
-#' \item \code{im04_calpha} a scalar equal to the multiplier used to construct 
+#'  upper bound.}
+#' \item{\code{phibar_lb}}{a n x length(eps) x length(delta) array containing
+#' values for \code{ifvals_lb} - \code{lambda_lb} * \code{q_lb}.}
+#' \item{\code{phibar_ub}}{a n x length(eps) x length(delta) array containing
+#' values for \code{ifvals_ub} - \code{lambda_ub} * \code{q_ub}.}
+#' \item{\code{mult_calpha_lb}}{a scalar calpha equal to the multiplier 
+#' used to construct uniform bands for the lower bound of the form psi(eps) 
+#' \eqn{\pm} calpha * sigma(eps).}
+#' \item{\code{mult_calpha_ub}}{a scalar calpha equal to the multiplier 
+#' used to construct uniform bands for the upper bound of the form psi(eps) 
+#' \eqn{\pm} calpha * sigma(eps).}
+#' \item{\code{im04_calpha}}{a scalar equal to the multiplier used to construct 
 #' the confidence interval for partially identified ATE as in Imbens & Manski 
-#' (2004).
+#' (2004).}
 #' 
 #' @section Details:
 #' As done in the paper, one can see that g(eta) for the lower bound is equal to

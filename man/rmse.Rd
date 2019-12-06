@@ -15,7 +15,7 @@ points used in evaluation and nsim is the number of simulations.}
 \item{n}{sample size.}
 }
 \value{
-scalar equal to the \sqrt(n) * RMSE.
+scalar equal to the \eqn{\sqrt(n) \times \text{RMSE}}.
 }
 \description{
 \code{rmse} computes RMSE, see Section 4 in paper

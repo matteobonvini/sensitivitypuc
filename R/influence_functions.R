@@ -23,16 +23,16 @@
 #' imposes no assumption if the outcome Y is bounded. 
 #' 
 #' @return A list containing:
-#' \item{ifvals} a n x length(eps) x length(delta) array containing 
+#' \item{ifvals}{a n x length(eps) x length(delta) array containing 
 #' the influence functions (varphi_l or varphi_u in manuscript) evaluated at 
-#' the observed X as a function of epsilon and delta; 
-#' \item{lambda} a n x length(eps) x length(delta) array containing 
+#' the observed X as a function of epsilon and delta;}
+#' \item{lambda}{a n x length(eps) x length(delta) array containing 
 #' the indicator ghatmat <= q if upper = FALSE or ghatmat > q, where q is 
-#' eps-quantile or (1-eps)-quantile of ghatmat.
-#' \item{quant} a length(eps) x length(delta) matrix containing the estimated
+#' eps-quantile or (1-eps)-quantile of ghatmat.}
+#' \item{quant}{a length(eps) x length(delta) matrix containing the estimated
 #' quantiles of ghatmat as a function of eps and delta. If upper = FALSE, 
-#' eps-quantiles are returned, if upper = TRUE, (1-eps)-quantiles are returned.
-#' \item{lambdaq} the product lambda * quant as a function of eps and delta.
+#' eps-quantiles are returned, if upper = TRUE, (1-eps)-quantiles are returned.}
+#' \item{lambdaq}{the product lambda * quant as a function of eps and delta.}
 #' @examples 
 #' eps <- seq(0, 0.1, 0.01)
 #' delta <- c(0.5, 1)

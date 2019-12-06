@@ -26,7 +26,7 @@ get_ci <- function(muhat, sigmahat, c) {
 #' @param truth a neps x 1 vector containing the true values for the curve.
 #' @param n sample size.
 #' 
-#' @return scalar equal to the \sqrt(n) * RMSE.
+#' @return scalar equal to the \eqn{\sqrt(n) \times \text{RMSE}}.
 #' @export 
 rmse <- function(simmat, truth, n) {
   if(is.matrix(simmat)) {
