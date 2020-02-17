@@ -14,7 +14,7 @@ this order.}
 
 \item{n}{sample size.}
 
-\item{alpha}{desired significance level}
+\item{alpha}{desired significance level (capped at \code{pnorm(5)}).}
 }
 \value{
 a scalar equal to the multiplier used to construct the confidence 

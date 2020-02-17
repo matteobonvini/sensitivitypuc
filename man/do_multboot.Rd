@@ -5,32 +5,31 @@
 \title{Multiplier bootstrap to construct uniform confidence bands around
 the curves tracing the bounds on ATE.}
 \usage{
-do_multboot(n, psihat, sigmahat, ifvals, alpha = 0.05, B = 10000)
+do_multboot(n, ndelta, psihat, sigmahat, ifvals, alpha = 0.05,
+  B = 10000)
 }
 \arguments{
 \item{n}{sample size.}
 
+\item{ndelta}{number of delta parameters used.}
+
 \item{psihat}{Estimate of either lower or upper bound curve minus 
-(epsilon x an estimate of the appropriate quantile). It is a vector 
-of length equal to the number of epsilon points at which the lower and upper 
-bounds curves are evaluated.}
+(epsilon x an estimate of the appropriate quantile). It is a 
+(num eps points) x (ndelta) matrix.}
 
 \item{sigmahat}{Estimate of the variance of psihat at each value of eps grid.
-It is a vector of length equal to the number of epsilon points at which the 
-lower and upper bounds curves are evaluated.}
+It is a (num eps points) x (ndelta) matrix.}
 
-\item{ifvals}{n times neps matrix, where n is number of observations, and 
-neps is the number of epsilon points at which the lower and upper bounds 
-curves are evaluated. It represents the "influence function" values 
-associated with psihat.}
+\item{ifvals}{n x (num eps points) x ndelta array. It represents the 
+"influence function" values associated with psihat.}
 
 \item{alpha}{confidence level. Default is 0.05.}
 
 \item{B}{number of rademacher rvs sampled. Default is 10000.}
 }
 \value{
-a scalar calpha equal to the multiplier used to construct bands of 
-the form psi(eps) \eqn{\pm} calpha * sigma(eps).
+a ndelta-dimensional vector \code{calpha} equal to the z-score used 
+to construct bands of the form psi(eps) \eqn{\pm} \code{calpha} * sigma(eps).
 }
 \description{
 \code{do_multboot} is the main function to implement 

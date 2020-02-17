@@ -4,10 +4,9 @@
 \alias{do_crossfit}
 \title{Estimation of regression functions using cross-fitting}
 \usage{
-do_crossfit(y, a, x, ymin, ymax, outfam = gaussian(),
-  treatfam = binomial(), nsplits = 5, do_parallel = FALSE,
-  ncluster = NULL, sl.lib = c("SL.earth", "SL.gam", "SL.glm",
-  "SL.mean", "SL.ranger", "SL.glm.interaction"), show_progress = FALSE)
+do_crossfit(y, a, x, ymin, ymax, nsplits, sl.lib, outfam = gaussian(),
+  treatfam = binomial(), show_progress = FALSE, do_parallel = FALSE,
+  ncluster = NULL)
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}
@@ -15,6 +14,14 @@ do_crossfit(y, a, x, ymin, ymax, outfam = gaussian(),
 \item{a}{nx1 treatment received vector}
 
 \item{x}{nxp \code{data.frame} of covariates. Variable must be named.}
+
+\item{ymin}{scalar such that P(Y >= ymin) = 1.}
+
+\item{ymax}{scalar such that P(Y <= ymax) = 1.}
+
+\item{nsplits}{number of splits for the cross-fitting.}
+
+\item{sl.lib}{character vector specifying which libraries to use for the SL.}
 
 \item{outfam}{family specifying the error distribution for outcome 
 regression, currently \code{gaussian()} or \code{binomial()} supported. 
@@ -24,21 +31,31 @@ Link should not be specified. Default is \code{gaussian()}.}
 regression, currently \code{binomial()} supported.
 Link should not be specified.}
 
-\item{nsplits}{number of splits for the cross-fitting.}
+\item{show_progress}{boolean for whether progress bar should be shown.
+Default is FALSE. Currently, only available if do_parallel is FALSE.}
 
 \item{do_parallel}{boolean for whether parallel computing should be used.
 Default is FALSE.}
 
 \item{ncluster}{number of clusters used if parallel computing is used.}
-
-\item{sl.lib}{character vector specifying which libraries to use for the SL.}
-
-\item{show_progress}{boolean for whether progress bar should be shown.
-Default is FALSE. Currently, only available if do_parallel is FALSE.}
 }
 \value{
-A nx4 matrix containing estimates of E(Y|A = 0, X), E(Y|A = 1, X),
-P(A = 0|X), and P(A = a|X) evaluated at the observed values of X.
+A list containing 
+\item{\code{test}}{a nx4 matrix containing estimates of E(Y|A = 0, X), 
+E(Y|A = 1, X), P(A = 0|X), and P(A = a|X) evaluated at the test points X. 
+If the function is estimated using folds 1 and 2, the values return are the 
+predictions corresponding to fold 3 (assuming nsplits = 3 in this case).}
+\item{\code{train}}{a (n*(nsplits-1))x4 matrix containing estimates of 
+E(Y|A = 0, X), E(Y|A = 1, X), P(A = 0|X), and P(A = a|X) evaluated at the 
+train points X. If the function is estimated using folds 1 and 2, 
+the values return are the predictions corresponding to folds 1 and 2.} 
+\item{\code{order_obs}}{a n-dimensional vector specifying the order of the
+observations after doing cross-fitting, where the order is given by fold num.
+For instance, if unit 1 is in fold 3, unit 2 is in fold 1, unit 3 is in fold 
+1 and unit 4 is in fold 2, order_obs = c(2, 3, 4, 1).}
+\item{\code{folds}}{a n-dimensional vectors specifying which fold each unit
+falls into. For instance, if unit 1 is in fold 3, unit 2 is in fold 1, 
+unit 3 is in fold 1 and unit 4 is in fold 2, folds = c(3, 1, 1, 2).}
 }
 \description{
 \code{do_crossfit} estimates the nuisance regression functions 
@@ -49,7 +66,7 @@ while still attaining, when possible, fast rates of convergence.
 \section{Details}{
  
 If the SuperLearner returns an error, a GLM is fitted instead. In this
-case the user is suggested to choose some other method of estimation and then
+case, we suggest the user chooses some other method of estimation and then
 pass the estimates as arguments to other functions.
 }
 
@@ -61,7 +78,7 @@ y <- 2 + x$x1 - x$x2 + rnorm(n)
 fits <- do_crossfit(y, a, x, min(y), max(y), outfam = gaussian(), 
                     treatfam = binomial(), nsplits = 5, 
                     sl.lib = c("SL.mean", "SL.glm", "SL.gam"))
-head(fits)
+head(fits$test)
 
 }
 \references{

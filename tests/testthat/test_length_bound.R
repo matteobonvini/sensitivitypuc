@@ -14,8 +14,9 @@ test_that("length at delta/eps in {0, 1} is {0, 1}", {
     res <- get_bound(y = y, a = a, x = x, ymin = ymin, ymax = ymax, 
                      outfam = gaussian(),  treatfam = binomial(), 
                      model = model, eps = c(0, 1), delta = c(0, 1), 
-                     do_mult_boot = FALSE, do_eps_zero = FALSE, nsplits = 1, 
-                     alpha = 0.05, B = NULL, sl.lib = "SL.glm")$bounds
+                     do_mult_boot = FALSE, do_eps_zero = FALSE, nsplits = 2, 
+                     alpha = 0.05, B = NULL, 
+                     sl.lib = c("SL.mean", "SL.glm"))$bounds
     
     
     max_widthc <- as.character(max_width)
@@ -55,7 +56,7 @@ test_that("width of bounds always in [0, 1]", {
     res <- get_bound(y = y, a = a, x = x, ymin = ymin, ymax = ymax, 
                      outfam = gaussian(),  treatfam = binomial(), 
                      model = model, eps = c(0, 1), delta = delta_seq, 
-                     do_mult_boot = FALSE, do_eps_zero = FALSE, nsplits = 1, 
+                     do_mult_boot = FALSE, do_eps_zero = FALSE, nsplits = 2, 
                      alpha = 0.05, B = NULL, do_rearrange = TRUE,
                      sl.lib = c("SL.mean", "SL.glm"))$bounds
     
@@ -96,7 +97,7 @@ test_that("width is increasing in epsilon", {
     res <- get_bound(y = y, a = a, x = x, ymin = ymin, ymax = ymax, 
                      outfam = gaussian(),  treatfam = binomial(), 
                      model = model, eps = eps_seq, delta = delta_seq, 
-                     do_mult_boot = FALSE, do_eps_zero = FALSE, nsplits = 1, 
+                     do_mult_boot = FALSE, do_eps_zero = FALSE, nsplits = 2, 
                      alpha = 0.05, B = NULL, do_rearrange = TRUE,
                      sl.lib = c("SL.mean", "SL.glm"))$bounds
     

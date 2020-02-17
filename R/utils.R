@@ -32,7 +32,7 @@ rmse <- function(simmat, truth, n) {
   if(is.matrix(simmat)) {
   out <- apply(sweep(simmat, 1, truth, "-"), 1, function(x) sqrt(mean(x^2)))
   } else {
-    out <- sqrt(mean(simmat - truth)^2)
+    out <- sqrt(mean((simmat - truth)^2))
   }
   return(mean(out) * sqrt(n))
 }

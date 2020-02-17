@@ -5,11 +5,10 @@
 \title{Estimation of bounds on ATE as a function of the proportion of 
 unmeasured confounding.}
 \usage{
-get_bound(y, a, x, ymin, ymax, outfam, treatfam, model = "x", eps = 0,
-  delta = 0, nsplits = 5, do_mult_boot = TRUE, do_eps_zero = TRUE,
-  alpha = 0.05, B = 10000, nuis_fns = NULL, plugin = FALSE,
-  do_rearrange = FALSE, sl.lib = c("SL.earth", "SL.gam", "SL.glm",
-  "SL.mean", "SL.ranger", "SL.glm.interaction"), do_parallel = FALSE,
+get_bound(y, a, x, ymin, ymax, outfam, treatfam, sl.lib, model = "x",
+  eps = 0, delta = 0, nsplits = 5, do_mult_boot = TRUE,
+  do_eps_zero = TRUE, alpha = 0.05, B = 10000, nuis_fns = NULL,
+  plugin = FALSE, do_rearrange = FALSE, do_parallel = FALSE,
   ncluster = NULL, show_progress = FALSE)
 }
 \arguments{
@@ -25,15 +24,17 @@ get_bound(y, a, x, ymin, ymax, outfam, treatfam, model = "x", eps = 0,
 
 \item{outfam}{family specifying the error distribution for outcome 
 regression, currently \code{gaussian()} or \code{binomial()} supported. 
-Link should not be specified. Default is \code{gaussian()}.}
+Link should not be specified.}
 
 \item{treatfam}{family specifying the error distribution for treatment 
 regression, currently \code{binomial()} supported.
 Link should not be specified.}
 
+\item{sl.lib}{character vector specifying which libraries to use for the SL.}
+
 \item{model}{a string specifying the assumption placed on S when 
 computing the bounds. Currently only "x" (\eqn{S \perp (Y, A) | X)} and "xa"
-(\eqn{S \perp Y | A, X}).}
+(\eqn{S \perp Y | A, X}). Default is model = "x".}
 
 \item{eps}{vector of arbitrary length specifying the values for the 
 proportion of confounding where the lower and upper bounds curves are 
@@ -78,11 +79,9 @@ available if do_parallel is FALSE.}
 }
 \value{
 A list containing
-\item{\code{bounds}}{a length(eps)x12xlength(delta) array, where, for each eps and 
-delta, it has the estimates of lower bound (\code{lb}), upper bound
+\item{\code{bounds}}{a length(eps)x12xlength(delta) array, where, for each 
+eps and delta, it has the estimates of lower bound (\code{lb}), upper bound
 (\code{ub}), lower uniform band for lower bound (\code{ci_lb_lo_unif}), 
-upper uniform band for lower bound  (\code{ci_lb_hi_unif}), 
-lower uniform band for upper bound (\code{ci_ub_lo_unif}), 
 upper uniform band for upper bound  (\code{ci_ub_hi_unif}),
 lower pointwise band for lower bound (\code{ci_lb_lo_pt}), 
 upper pointwise band for lower bound  (\code{ci_lb_hi_pt}), 
@@ -98,48 +97,82 @@ of eps.}
 \item{\code{eps_zero}}{a length(delta)x5 \code{data.frame} with values of 
 delta, estimate of eps0, max(0, ci_lo), min(1, ci_hi), variance of estimate 
 of eps0.}
-\item{\code{q_lb}}{estimates of eps-quantile of g(etab) for lower bound.}
-\item{\code{q_ub}}{estimates of (1-eps)-quantile of g(etab) for upper bound.}
-\item{\code{lambda_lb}}{a n x length(eps) x length(delta) array containing 
+\item{\code{q_lb}}{a list of size \code{nsplits}, where element j is a
+(num eps) x (num delta) matrix containing estimates of eps-quantile of 
+g(etab) for lower bound computed using all obs except those in fold j}.
+\item{\code{q_ub}}{a list of size \code{nsplits}, where element j is a
+(num eps) x (num delta) matrix containing estimates of eps-quantile of 
+g(etab) for upper bound computed using all obs except those in fold j}.
+\item{\code{lambda_lb}}{a list of size \code{nsplits}, where element j
+contains a nxlength(eps)xlength(delta) array containing 
 the indicator ghatmat <= q, where q is eps-quantile of ghatmat and 
-ghatmat is g(eta) for lower bound.}
-\item{\code{lambda_ub}}{a n x length(eps) x length(delta) array containing 
+ghatmat is g(eta) for lower bound, computed using regression functions
+estimated using all folds but j and evaluated using obs at fold j.}
+\item{\code{lambda_ub}}{a list of size \code{nsplits}, where element j
+contains a nxlength(eps)xlength(delta) array containing 
 the indicator ghatmat > q, where q is (1-eps)-quantile of ghatmat and 
-ghatmat is g(eta) for upper bound.}
+ghatmat is g(eta) for upper bound, computed using regression functions
+estimated using all folds but j and evaluated using obs at fold j.}
 \item{\code{ifvals_lb}}{a n x length(eps) x length(delta) array containing 
 the influence functions for lower bound evaluated at the observed X as a 
 function of epsilon and delta.}
 \item{\code{ifvals_ub}}{a n x length(eps) x length(delta) array containing 
 the influence functions for upper bound evaluated at the observed X as a 
 function of epsilon and delta.}
-\item{\code{nuis_fns}}{a nx4 matrix containing estimates of E(Y|A = 0, X), 
-E(Y|A = 1, X), P(A = 0|X), and P(A = a|X) evaluated at the observed values 
-of X.}
-\item{\code{nuhat}}{a length(y)x1 matrix containing the influence function 
-values at each observed X of the parameter E(E(Y|A=1, X) - E(Y|A=0, X)).}
-\item{\code{glhat}}{a n x length(delta) matrix containing g(eta) for lower 
-bound.}
-\item{\code{guhat}}{a n x length(delta) matrix containing g(eta) for upper 
-bound.}
-\item{\code{tauhat_lb}}{a length(y)x1 matrix containing the influence function
- values at each observed X of the parameter E(g(eta)) with g(eta) for the 
- lower bound.}
-\item{\code{tauhat_ub}}{a length(y)x1 matrix containing the influence function
- values at each observed X of the parameter E(g(eta)) with g(eta) for the 
- upper bound.}
+\item{\code{nuis_fns}}{a list containing estimates of regression functions
+evaluated at test obs and train obs. See \code{\link{do_crossfit}}.}
+\item{\code{nuhat}}{a nx1 matrix containing the influence function values 
+for E{E(Y|A = 1, X) - E(Y|A = 0, X)} computed using regressions fns estimated 
+using all obs except those in fold j and evaluated at obs in fold j.}
+\item{\code{glhat}}{a list of size \code{nsplits}, where element j
+is (num obs in split j) x length(delta) matrix containing estimates of g(eta) 
+for lower bound computed using regressions fns estimated using all obs except 
+those in fold j and evaluated at obs in fold j.}
+\item{\code{guhat}}{a list of size \code{nsplits}, where element j
+is (num obs in split j) x length(delta) matrix containing estimates of g(eta) 
+for upper bound computed using regressions fns estimated using all obs except 
+those in fold j and evaluated at obs in fold j.}
+\item{\code{glhat_train}}{a list of size \code{nsplits}, where element j
+is (n - num obs in split j) x length(delta) matrix containing estimates of 
+g(eta) for lower bound computed using regressions fns estimated using all obs 
+except those in fold j and evaluated at obs \emph{not} in fold j.}
+\item{\code{guhat_train}}{a list of size \code{nsplits}, where element j
+is (n - num obs in split j) x length(delta) matrix containing estimates of 
+g(eta) for upper bound computed using regressions fns estimated using all obs 
+except those in fold j and evaluated at obs \emph{not} in fold j.}
+\item{\code{tauhat_lb}}{a list of size \code{nsplits}, where element j 
+is (num obs in split j) x 1 matrix containing the influence function
+ values of the parameter E(g(eta)) with g(eta) for the lower bound computed
+ using regression fns estimated from all obs except those in fold j and 
+ evaluated at obs in fold j.}
+\item{\code{tauhat_ub}}{a list of size \code{nsplits}, where element j 
+is (num obs in split j) x 1 matrix containing the influence function
+ values of the parameter E(g(eta)) with g(eta) for the upper bound computed
+ using regression fns estimated from all obs except those in fold j and 
+ evaluated at obs in fold j.}
 \item{\code{phibar_lb}}{a n x length(eps) x length(delta) array containing
 values for \code{ifvals_lb} - \code{lambda_lb} * \code{q_lb}.}
 \item{\code{phibar_ub}}{a n x length(eps) x length(delta) array containing
 values for \code{ifvals_ub} - \code{lambda_ub} * \code{q_ub}.}
-\item{\code{mult_calpha_lb}}{a scalar calpha equal to the multiplier 
-used to construct uniform bands for the lower bound of the form psi(eps) 
-\eqn{\pm} calpha * sigma(eps).}
-\item{\code{mult_calpha_ub}}{a scalar calpha equal to the multiplier 
-used to construct uniform bands for the upper bound of the form psi(eps) 
-\eqn{\pm} calpha * sigma(eps).}
-\item{\code{im04_calpha}}{a scalar equal to the multiplier used to construct 
-the confidence interval for partially identified ATE as in Imbens & Manski 
-(2004).}
+\item{\code{phibar_lb_fold}}{a list of size \code{nsplits}, where element j
+is n x length(eps) x length(delta) array containing
+values for \code{ifvals_lb} - \code{lambda_lb} * \code{q_lb} computed using
+regression functions estimated from all obs except those in fold j and 
+evaluated at obs in fold j.}
+\item{\code{phibar_ub_fold}}{a list of size \code{nsplits}, where element j
+is n x length(eps) x length(delta) array containing
+values for \code{ifvals_ub} - \code{lambda_ub} * \code{q_ub} computed using
+regression functions estimated from all obs except those in fold j and 
+evaluated at obs in fold j.}
+\item{\code{mult_calpha_lb}}{a ndelta-dimensional vector containing 
+\code{calpha} equal to the z-score used to construct uniform bands for the 
+lower bound of the form psi(eps) \eqn{\pm} \code{calpha} * sigma(eps).}
+\item{\code{mult_calpha_ub}}{a ndelta-dimensional vector containing 
+\code{calpha} equal to the z-score used to construct uniform bands for the 
+upper bound of the form psi(eps) \eqn{\pm} \code{calpha} * sigma(eps).}
+\item{\code{im04_calpha}}{a ndelta-dimensional vector containing to the 
+z-score used to construct the confidence interval for partially identified 
+ATE as in Imbens & Manski (2004).}
 }
 \description{
 \code{get_bound} is the main function to estimate the lower and 
@@ -169,7 +202,7 @@ res <- get_bound(y = y, a = a, x = x, ymin = ymin, ymax = ymax,
                  do_mult_boot = TRUE, do_eps_zero = TRUE, nsplits = 5, 
                  alpha = 0.05, B = 1000, sl.lib = "SL.glm")
 print(res$eps_zero)
-print(head(res$bounds[,,1]))
+print(head(res$bounds[, , 1]))
 
 }
 \references{

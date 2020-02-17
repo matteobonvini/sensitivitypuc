@@ -4,9 +4,7 @@
 \alias{get_muahat}
 \title{Estimation of regression function E(Y|A = a, X)}
 \usage{
-get_muahat(y, a, x, newx, aval, ymin, ymax, family = gaussian(),
-  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.ranger",
-  "SL.glm.interaction", "SL.mean"))
+get_muahat(y, a, x, newx, aval, ymin, ymax, family = gaussian(), sl.lib)
 }
 \arguments{
 \item{y}{nx1 vector of outcomes in [0, 1]}
@@ -33,8 +31,13 @@ Link should not be specified. Default is \code{gaussian()}.}
 \item{sl.lib}{character vector specifying which libraries to use for the SL.}
 }
 \value{
-A n-dimensional vectors containing estimates of E(Y|A = aval, X) 
-evaluated at newx.
+A list containing estimates of E(Y | A = aval, X):
+\item{\code{testvals}}{nrow(\code{newx})-dimensional vector containing 
+estimates of regression functions (computed using points \code{x}) evaluated
+at test points \code{newx}.}
+\item{\code{trainvals}}{nrow(\code{x})-dimensional vector containing 
+estimates of regression functions (computed using points \code{x}) evaluated 
+at train points \code{x}}
 }
 \description{
 \code{get_muahat} estimates the regression function 
@@ -56,7 +59,7 @@ a <- rbinom(n, 1, pnorm(x$x1))
 y <- 2 + x$x1 - x$x2 + rnorm(n)
 fits <- get_muahat(y, a, x, newx, 1, min(y), max(y), family = gaussian(), 
                    sl.lib = c("SL.mean", "SL.glm", "SL.gam"))
-head(fits)
+head(fits$testvals)
 
 }
 \references{

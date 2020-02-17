@@ -6,7 +6,7 @@
 #' estimate of standard deviation of lb, estimate of standard deviation of ub in
 #' this order.
 #' @param n sample size.
-#' @param alpha desired significance level
+#' @param alpha desired significance level (capped at \code{pnorm(5)}). 
 #' 
 #' @return a scalar equal to the multiplier used to construct the confidence 
 #' interval for partially identified ATE. 
@@ -23,15 +23,20 @@
 #' @export 
 
 get_im04 <- function(dat, n, alpha) {
+  
   lb <- dat[1]
   ub <- dat[2] 
   sigma_l <- dat[3] 
   sigma_u <- dat[4] 
+  
   imfn <- function(x) {
-    out <- pnorm(x + sqrt(n)*(ub-lb)/max(sigma_l, sigma_u)) - pnorm(-x) - 
-      (1-alpha)
+    out <- pnorm(x + sqrt(n) * (ub - lb) / max(sigma_l, sigma_u)) - pnorm(-x) - 
+      (1 - alpha)
     return(out)
   }
-  calpha <- uniroot(f = imfn, interval = c(0, 5), tol = .Machine$double.eps)$root
+  
+  calpha <- uniroot(f = imfn, interval = c(0, 5), 
+                    tol = .Machine$double.eps)$root
+  
   return(calpha)
 }

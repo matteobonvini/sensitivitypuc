@@ -11,13 +11,14 @@
 #' @param ymax supremum of the support of y.
 #' @param outfam family specifying the error distribution for outcome 
 #' regression, currently \code{gaussian()} or \code{binomial()} supported. 
-#' Link should not be specified. Default is \code{gaussian()}. 
+#' Link should not be specified.
 #' @param treatfam family specifying the error distribution for treatment 
 #' regression, currently \code{binomial()} supported.
 #' Link should not be specified.
+#' @param sl.lib character vector specifying which libraries to use for the SL.
 #' @param model a string specifying the assumption placed on S when 
 #' computing the bounds. Currently only "x" (\eqn{S \perp (Y, A) | X)} and "xa"
-#' (\eqn{S \perp Y | A, X}).
+#' (\eqn{S \perp Y | A, X}). Default is model = "x".
 #' @param eps vector of arbitrary length specifying the values for the 
 #' proportion of confounding where the lower and upper bounds curves are 
 #' evaluated. Default is 0 (no unmeasured confounding).
@@ -48,11 +49,9 @@
 #' available if do_parallel is FALSE.
 #' 
 #' @return A list containing
-#' \item{\code{bounds}}{a length(eps)x12xlength(delta) array, where, for each eps and 
-#' delta, it has the estimates of lower bound (\code{lb}), upper bound
+#' \item{\code{bounds}}{a length(eps)x12xlength(delta) array, where, for each 
+#' eps and delta, it has the estimates of lower bound (\code{lb}), upper bound
 #' (\code{ub}), lower uniform band for lower bound (\code{ci_lb_lo_unif}), 
-#' upper uniform band for lower bound  (\code{ci_lb_hi_unif}), 
-#' lower uniform band for upper bound (\code{ci_ub_lo_unif}), 
 #' upper uniform band for upper bound  (\code{ci_ub_hi_unif}),
 #' lower pointwise band for lower bound (\code{ci_lb_lo_pt}), 
 #' upper pointwise band for lower bound  (\code{ci_lb_hi_pt}), 
@@ -68,48 +67,82 @@
 #' \item{\code{eps_zero}}{a length(delta)x5 \code{data.frame} with values of 
 #' delta, estimate of eps0, max(0, ci_lo), min(1, ci_hi), variance of estimate 
 #' of eps0.}
-#' \item{\code{q_lb}}{estimates of eps-quantile of g(etab) for lower bound.}
-#' \item{\code{q_ub}}{estimates of (1-eps)-quantile of g(etab) for upper bound.}
-#' \item{\code{lambda_lb}}{a n x length(eps) x length(delta) array containing 
+#' \item{\code{q_lb}}{a list of size \code{nsplits}, where element j is a
+#' (num eps) x (num delta) matrix containing estimates of eps-quantile of 
+#' g(etab) for lower bound computed using all obs except those in fold j}.
+#' \item{\code{q_ub}}{a list of size \code{nsplits}, where element j is a
+#' (num eps) x (num delta) matrix containing estimates of eps-quantile of 
+#' g(etab) for upper bound computed using all obs except those in fold j}.
+#' \item{\code{lambda_lb}}{a list of size \code{nsplits}, where element j
+#' contains a nxlength(eps)xlength(delta) array containing 
 #' the indicator ghatmat <= q, where q is eps-quantile of ghatmat and 
-#' ghatmat is g(eta) for lower bound.}
-#' \item{\code{lambda_ub}}{a n x length(eps) x length(delta) array containing 
+#' ghatmat is g(eta) for lower bound, computed using regression functions
+#' estimated using all folds but j and evaluated using obs at fold j.}
+#' \item{\code{lambda_ub}}{a list of size \code{nsplits}, where element j
+#' contains a nxlength(eps)xlength(delta) array containing 
 #' the indicator ghatmat > q, where q is (1-eps)-quantile of ghatmat and 
-#' ghatmat is g(eta) for upper bound.}
+#' ghatmat is g(eta) for upper bound, computed using regression functions
+#' estimated using all folds but j and evaluated using obs at fold j.}
 #' \item{\code{ifvals_lb}}{a n x length(eps) x length(delta) array containing 
 #' the influence functions for lower bound evaluated at the observed X as a 
 #' function of epsilon and delta.}
 #' \item{\code{ifvals_ub}}{a n x length(eps) x length(delta) array containing 
 #' the influence functions for upper bound evaluated at the observed X as a 
 #' function of epsilon and delta.}
-#' \item{\code{nuis_fns}}{a nx4 matrix containing estimates of E(Y|A = 0, X), 
-#' E(Y|A = 1, X), P(A = 0|X), and P(A = a|X) evaluated at the observed values 
-#' of X.}
-#' \item{\code{nuhat}}{a length(y)x1 matrix containing the influence function 
-#' values at each observed X of the parameter E(E(Y|A=1, X) - E(Y|A=0, X)).}
-#' \item{\code{glhat}}{a n x length(delta) matrix containing g(eta) for lower 
-#' bound.}
-#' \item{\code{guhat}}{a n x length(delta) matrix containing g(eta) for upper 
-#' bound.}
-#' \item{\code{tauhat_lb}}{a length(y)x1 matrix containing the influence function
-#'  values at each observed X of the parameter E(g(eta)) with g(eta) for the 
-#'  lower bound.}
-#' \item{\code{tauhat_ub}}{a length(y)x1 matrix containing the influence function
-#'  values at each observed X of the parameter E(g(eta)) with g(eta) for the 
-#'  upper bound.}
+#' \item{\code{nuis_fns}}{a list containing estimates of regression functions
+#' evaluated at test obs and train obs. See \code{\link{do_crossfit}}.}
+#' \item{\code{nuhat}}{a nx1 matrix containing the influence function values 
+#' for E{E(Y|A = 1, X) - E(Y|A = 0, X)} computed using regressions fns estimated 
+#' using all obs except those in fold j and evaluated at obs in fold j.}
+#' \item{\code{glhat}}{a list of size \code{nsplits}, where element j
+#' is (num obs in split j) x length(delta) matrix containing estimates of g(eta) 
+#' for lower bound computed using regressions fns estimated using all obs except 
+#' those in fold j and evaluated at obs in fold j.}
+#' \item{\code{guhat}}{a list of size \code{nsplits}, where element j
+#' is (num obs in split j) x length(delta) matrix containing estimates of g(eta) 
+#' for upper bound computed using regressions fns estimated using all obs except 
+#' those in fold j and evaluated at obs in fold j.}
+#' \item{\code{glhat_train}}{a list of size \code{nsplits}, where element j
+#' is (n - num obs in split j) x length(delta) matrix containing estimates of 
+#' g(eta) for lower bound computed using regressions fns estimated using all obs 
+#' except those in fold j and evaluated at obs \emph{not} in fold j.}
+#' \item{\code{guhat_train}}{a list of size \code{nsplits}, where element j
+#' is (n - num obs in split j) x length(delta) matrix containing estimates of 
+#' g(eta) for upper bound computed using regressions fns estimated using all obs 
+#' except those in fold j and evaluated at obs \emph{not} in fold j.}
+#' \item{\code{tauhat_lb}}{a list of size \code{nsplits}, where element j 
+#' is (num obs in split j) x 1 matrix containing the influence function
+#'  values of the parameter E(g(eta)) with g(eta) for the lower bound computed
+#'  using regression fns estimated from all obs except those in fold j and 
+#'  evaluated at obs in fold j.}
+#' \item{\code{tauhat_ub}}{a list of size \code{nsplits}, where element j 
+#' is (num obs in split j) x 1 matrix containing the influence function
+#'  values of the parameter E(g(eta)) with g(eta) for the upper bound computed
+#'  using regression fns estimated from all obs except those in fold j and 
+#'  evaluated at obs in fold j.}
 #' \item{\code{phibar_lb}}{a n x length(eps) x length(delta) array containing
 #' values for \code{ifvals_lb} - \code{lambda_lb} * \code{q_lb}.}
 #' \item{\code{phibar_ub}}{a n x length(eps) x length(delta) array containing
 #' values for \code{ifvals_ub} - \code{lambda_ub} * \code{q_ub}.}
-#' \item{\code{mult_calpha_lb}}{a scalar calpha equal to the multiplier 
-#' used to construct uniform bands for the lower bound of the form psi(eps) 
-#' \eqn{\pm} calpha * sigma(eps).}
-#' \item{\code{mult_calpha_ub}}{a scalar calpha equal to the multiplier 
-#' used to construct uniform bands for the upper bound of the form psi(eps) 
-#' \eqn{\pm} calpha * sigma(eps).}
-#' \item{\code{im04_calpha}}{a scalar equal to the multiplier used to construct 
-#' the confidence interval for partially identified ATE as in Imbens & Manski 
-#' (2004).}
+#' \item{\code{phibar_lb_fold}}{a list of size \code{nsplits}, where element j
+#' is n x length(eps) x length(delta) array containing
+#' values for \code{ifvals_lb} - \code{lambda_lb} * \code{q_lb} computed using
+#' regression functions estimated from all obs except those in fold j and 
+#' evaluated at obs in fold j.}
+#' \item{\code{phibar_ub_fold}}{a list of size \code{nsplits}, where element j
+#' is n x length(eps) x length(delta) array containing
+#' values for \code{ifvals_ub} - \code{lambda_ub} * \code{q_ub} computed using
+#' regression functions estimated from all obs except those in fold j and 
+#' evaluated at obs in fold j.}
+#' \item{\code{mult_calpha_lb}}{a ndelta-dimensional vector containing 
+#' \code{calpha} equal to the z-score used to construct uniform bands for the 
+#' lower bound of the form psi(eps) \eqn{\pm} \code{calpha} * sigma(eps).}
+#' \item{\code{mult_calpha_ub}}{a ndelta-dimensional vector containing 
+#' \code{calpha} equal to the z-score used to construct uniform bands for the 
+#' upper bound of the form psi(eps) \eqn{\pm} \code{calpha} * sigma(eps).}
+#' \item{\code{im04_calpha}}{a ndelta-dimensional vector containing to the 
+#' z-score used to construct the confidence interval for partially identified 
+#' ATE as in Imbens & Manski (2004).}
 #' 
 #' @section Details:
 #' As done in the paper, one can see that g(eta) for the lower bound is equal to
@@ -132,7 +165,7 @@
 #'                  do_mult_boot = TRUE, do_eps_zero = TRUE, nsplits = 5, 
 #'                  alpha = 0.05, B = 1000, sl.lib = "SL.glm")
 #' print(res$eps_zero)
-#' print(head(res$bounds[,,1]))
+#' print(head(res$bounds[, , 1]))
 #' 
 #' @references Imbens, G. W., & Manski, C. F. (2004). Confidence intervals for 
 #' partially identified parameters. \emph{Econometrica}, 72(6), 1845-1857.
@@ -151,14 +184,12 @@
 #' 
 #' @export
 
-get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x", 
-                      eps = 0, delta = 0, nsplits = 5, do_mult_boot = TRUE, 
-                      do_eps_zero = TRUE, alpha = 0.05, B = 10000, 
-                      nuis_fns = NULL, plugin = FALSE, do_rearrange = FALSE,
-                      sl.lib = c("SL.earth","SL.gam","SL.glm", "SL.mean", 
-                                 "SL.ranger", "SL.glm.interaction"),
-                      do_parallel = FALSE, ncluster = NULL, 
-                      show_progress = FALSE) {
+get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib, 
+                      model = "x", eps = 0, delta = 0, nsplits = 5, 
+                      do_mult_boot = TRUE, do_eps_zero = TRUE, alpha = 0.05, 
+                      B = 10000, nuis_fns = NULL, plugin = FALSE, 
+                      do_rearrange = FALSE, do_parallel = FALSE, 
+                      ncluster = NULL, show_progress = FALSE) {
   
   if(is.null(nuis_fns)) {
     nuis_fns <- do_crossfit(y = y, a = a, x = x, outfam = outfam, 
@@ -167,28 +198,48 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
                             do_parallel = do_parallel, ncluster = ncluster,
                             show_progress = show_progress)
   }
-  pi0hat <- nuis_fns[, "pi0"]
-  pi1hat <- nuis_fns[, "pi1"]
-  mu0hat <- nuis_fns[, "mu0"]
-  mu1hat <- nuis_fns[, "mu1"]
+  
+  pi0hat <- nuis_fns$test[, "pi0"]
+  pi1hat <- nuis_fns$test[, "pi1"]
+  mu0hat <- nuis_fns$test[, "mu0"]
+  mu1hat <- nuis_fns$test[, "mu1"]
+  
+  pi0hat_train <- nuis_fns$train[, "pi0"]
+  pi1hat_train <- nuis_fns$train[, "pi1"]
+  mu0hat_train <- nuis_fns$train[, "mu0"]
+  mu1hat_train <- nuis_fns$train[, "mu1"]
+  
+  folds_train <- as.factor(nuis_fns$train[, "fold"])
+  folds_test <- as.factor(nuis_fns$test[, "fold"])
+  nobs_fold <- table(folds_test)
+  nsplits <- length(unique(folds_train))
+  
   n <- length(y)
   ndelta <- length(delta)
   neps <- length(eps)
+  order_obs <- nuis_fns$order_obs
+  y <- y[order_obs]
+  a <- a[order_obs]
+  x <- x[order_obs, , drop = FALSE]
   
   # Estimate term E(mu1(X) - mu0(X)) (ATE under no unmeasured confounding)
   psi0 <- if_gamma(y = y, a = a, aval = 0, pia = pi0hat, mua = mu0hat)
   psi1 <- if_gamma(y = y, a = a, aval = 1, pia = pi1hat, mua = mu1hat)
   nuhat <- psi1 - psi0
+  nuhat_fold <- split(nuhat, folds_test)
   
   if(model == "x") {
     
     pi0g <- pi0hat
     pi1g <- pi1hat
     
+    pi0g_train <- pi0hat_train
+    pi1g_train <- pi1hat_train
+    
   } else if(model == "xa") {
     
-    pi0g <- 1 - a
-    pi1g <- a
+    pi0g <- pi0g_train <- 1 - a
+    pi1g <- pi1g_train <- a
     
   } else {
     
@@ -196,21 +247,41 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
     
   }
   
-  glhat <- pi0g * (ymin - mu1hat) - pi1g * (ymax - mu0hat)
-  guhat <- pi0g * (ymax - mu1hat) - pi1g * (ymin - mu0hat)
-  glhat <- glhat %*% t(delta)
-  guhat <- guhat %*% t(delta)
+  datg <- data.frame(ymin = ymin, ymax = ymax, pi0g = pi0g, pi1g = pi1g, 
+                     mu0 = mu0hat, mu1 = mu1hat)
   
-  colnames(glhat) <- colnames(guhat) <- delta
+  gl <- get_g(data = datg, delta = delta, upper = FALSE)
+  gu <- get_g(data = datg, delta = delta, upper = TRUE)
+  
+  min_gl <- apply(gl, 2, min)
+  min_gu <- apply(gu, 2, min)
+  max_gl <- apply(gl, 2, max)
+  max_gu <- apply(gu, 2, max)
+  
+  glhat <- by(gl, folds_test, identity, simplify = FALSE)
+  guhat <- by(gu, folds_test, identity, simplify = FALSE)
+  
+  datg_train <- data.frame(ymin = ymin, ymax = ymax, pi0g = pi0g_train, 
+                           pi1g = pi1g_train, mu0 = mu0hat_train, 
+                           mu1 = mu1hat_train)
+  glhat_train <- by(datg_train, folds_train, get_g, delta = delta, upper = FALSE,
+                    simplify = FALSE)
+  guhat_train <- by(datg_train, folds_train, get_g, delta = delta, upper = TRUE,
+                    simplify = FALSE)
+  
+  qhats_lb <- lapply(glhat_train, get_quant_g, eps = eps, min_g = min_gl,
+                     max_g = max_gl)
+  qhats_ub <- lapply(guhat_train, get_quant_g, eps = 1 - eps, min_g = min_gu,
+                     max_g = max_gu)
   
   if(!plugin) {
     
-    tauhat_lb <- if_tau(y = y, a = a, ymin = ymin, ymax = ymax, pi0 = pi0hat, 
-                        pi1 = pi1hat, mu0 = mu0hat, mu1 = mu1hat, upper = FALSE)
-    tauhat_ub <- if_tau(y = y, a = a, ymin = ymin, ymax = ymax, pi0 = pi0hat, 
-                        pi1 = pi1hat, mu0 = mu0hat, mu1 = mu1hat, upper = TRUE)
-    tauhat_lb <- tauhat_lb %*% t(delta)
-    tauhat_ub <- tauhat_ub %*% t(delta)
+    dat_tau <- data.frame(y = y, a = a, ymin = ymin, ymax = ymax, pi0 = pi0hat,
+                          pi1 = pi1hat, mu0 = mu0hat, mu1 = mu1hat)
+    tauhat_lb <- by(dat_tau, folds_test, if_tau, delta = delta, upper = FALSE, 
+                    simplify = FALSE)
+    tauhat_ub <- by(dat_tau, folds_test, if_tau, delta = delta, upper = TRUE, 
+                    simplify = FALSE)
     
   } else {
     
@@ -218,12 +289,16 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
     tauhat_ub <- guhat
     
   }
-  colnames(tauhat_lb) <- colnames(tauhat_ub) <- delta
   
-  list_lb <- get_ifvals(n = n, eps = eps, delta = delta, upper = FALSE, 
-                        nu = nuhat, tau = tauhat_lb, ghatmat = glhat)
-  list_ub <- get_ifvals(n = n, eps = eps, delta = delta, upper = TRUE, 
-                        nu = nuhat, tau = tauhat_ub, ghatmat = guhat)
+  list_lb <- get_ifvals(n = n, neps = neps, ndelta = ndelta, upper = FALSE, 
+                        nu = nuhat_fold, tau = tauhat_lb, g = glhat, 
+                        quant = qhats_lb, nsplits = nsplits, 
+                        nobs_fold = nobs_fold)
+  
+  list_ub <- get_ifvals(n = n, neps = neps, ndelta = ndelta, upper = TRUE, 
+                        nu = nuhat_fold, tau = tauhat_ub, g = guhat,
+                        quant = qhats_ub, nsplits = nsplits, 
+                        nobs_fold = nobs_fold)
   
   lambda_l <- list_lb$lambda
   lambda_u <- list_ub$lambda
@@ -231,44 +306,66 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
   lambdaq_u <- list_ub$lambdaq
   ifvals_l <- list_lb$ifvals
   ifvals_u <- list_ub$ifvals
-  q_l <- list_lb$quant
-  q_u <- list_ub$quant
   
-  phibar_l <- ifvals_l - lambdaq_l
-  phibar_u <- ifvals_u - lambdaq_u
+  phibar_l_fold <- Map("-", ifvals_l, lambdaq_l)
+  phibar_u_fold <- Map("-", ifvals_u, lambdaq_u)
   
-  est_l <- apply(ifvals_l, c(2, 3), mean)
-  est_u <- apply(ifvals_u, c(2, 3), mean)
-  var_l <- apply(phibar_l, c(2, 3), var)
-  var_u <- apply(phibar_u, c(2, 3), var)
+  .get_est_fold <- function(x, fun) { 
+    array( apply(x, c(2, 3), fun), dim = c(neps, ndelta) ) 
+    }
+  
+  est_l_fold <- array(vapply(ifvals_l, .get_est_fold, fun = mean,
+                             FUN.VALUE = array(0, dim = c(neps, ndelta))),
+                      dim = c(neps, ndelta, nsplits))
+  est_u_fold <- array(vapply(ifvals_u, .get_est_fold, fun = mean,
+                             FUN.VALUE = array(0, dim = c(neps, ndelta))),
+                      dim = c(neps, ndelta, nsplits))
+    
+  est_l <- array(apply(est_l_fold, c(1, 2), mean), dim = c(neps, ndelta))
+  est_u <- array(apply(est_u_fold, c(1, 2), mean), dim = c(neps, ndelta))
+  
+  phibar_l <- abind::abind(phibar_l_fold, along = 1)
+  phibar_u <- abind::abind(phibar_u_fold, along = 1)
+  
+  var_l <- array(apply(phibar_l, c(2, 3), var), dim = c(neps, ndelta))
+  var_u <- array(apply(phibar_u, c(2, 3), var), dim = c(neps, ndelta))
   
   if(do_mult_boot) {
+
+    estbar_l_fold <- array(vapply(phibar_l_fold, .get_est_fold, fun = mean, 
+                                  FUN.VALUE = array(0, dim = c(neps, ndelta))),
+                           dim = c(neps, ndelta, nsplits))
+    estbar_u_fold <- array(vapply(phibar_u_fold, .get_est_fold, fun = mean, 
+                                  FUN.VALUE = array(0, dim = c(neps, ndelta))),
+                           dim = c(neps, ndelta, nsplits))
     
-    lb_estbar <- apply(phibar_l, c(2, 3), mean)
-    ub_estbar <- apply(phibar_u, c(2, 3), mean)
+    lb_estbar <- array(apply(estbar_l_fold, c(1, 2), mean), 
+                       dim = c(neps, ndelta))
+    ub_estbar <- array(apply(estbar_u_fold, c(1, 2), mean), 
+                       dim = c(neps, ndelta))
     
-    temp_fn <- function(x, psihat, sigmahat, ifvals) {
-      out <- do_multboot(n = n, psihat = psihat[, x], 
-                          sigmahat = sigmahat[, x], ifvals = ifvals[, , x], 
-                          alpha = alpha / 2, B = B)
-      return(out)
-    }
-    calpha_lb <- sapply(1:ndelta, temp_fn, psihat = lb_estbar, sigmahat = var_l,
-                        ifvals = phibar_l)
-    calpha_ub <- sapply(1:ndelta, temp_fn, psihat = -ub_estbar, 
-                        sigmahat = var_u, ifvals = -phibar_u)
+    calpha_lb <- do_multboot(n = n, ndelta = ndelta, psihat = lb_estbar, 
+                             sigmahat = var_l, ifvals = phibar_l,
+                             alpha = alpha / 2, B = B)
+    calpha_ub <- do_multboot(n = n, ndelta = ndelta, psihat = -ub_estbar, 
+                             sigmahat = var_u, ifvals = -phibar_u, 
+                             alpha = alpha / 2, B = B)
     calpha_lb <- matrix(rep(calpha_lb, neps), ncol = ndelta, nrow = neps, 
                         byrow = TRUE)
     calpha_ub <- matrix(rep(calpha_ub, neps), ncol = ndelta, nrow = neps, 
                         byrow = TRUE)
   } else {
-    calpha_lb <- calpha_ub <- qnorm(1-alpha/2)
+    calpha_lb <- calpha_ub <- qnorm(1 - alpha / 2)
   }
   
   if(do_eps_zero) {
-    eps_zero <- get_eps_zero(n = n, eps = eps, lb = est_l, ub = est_u, ql = q_l,
-                             qu = q_u, ifvals_lb = phibar_l, 
-                             ifvals_ub = phibar_u, delta = delta, alpha = alpha)
+
+    eps_zero <- get_eps_zero(n = n, pt_est = mean(nuhat), eps = eps, lb = est_l, 
+                             ub = est_u, ql = qhats_lb, qu = qhats_ub, 
+                             ifvals_lb = phibar_l_fold, 
+                             ifvals_ub = phibar_u_fold, 
+                             delta = delta, alpha = alpha)
+    
   } else {
     eps_zero <- NULL
   }
@@ -280,11 +377,11 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
     return(out)
   }
   
-  ci_lb <- get_ci(est_l, sqrt(var_l/n), calpha_lb)
-  ci_ub <- get_ci(est_u, sqrt(var_u/n), calpha_ub)
+  ci_lb <- get_ci(est_l, sqrt(var_l / n), calpha_lb)
+  ci_ub <- get_ci(est_u, sqrt(var_u / n), calpha_ub)
   
-  ci_lb_pt <- get_ci(est_l, sqrt(var_l/n), qnorm(1-alpha/2))
-  ci_ub_pt <- get_ci(est_u, sqrt(var_u/n), qnorm(1-alpha/2))
+  ci_lb_pt <- get_ci(est_l, sqrt(var_l / n), qnorm(1 - alpha / 2))
+  ci_ub_pt <- get_ci(est_u, sqrt(var_u / n), qnorm(1 - alpha / 2))
   
   temp <- array(cbind(est_l, est_u, sqrt(var_l), sqrt(var_u)), 
                 dim = c(neps, ndelta, 4))
@@ -293,39 +390,53 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, model = "x",
   ci_im04_l <- get_ci(est_l, sqrt(var_l/n), cim04)[, 1, , drop = FALSE]
   ci_im04_u <- get_ci(est_u, sqrt(var_u/n), cim04)[, 2, , drop = FALSE] 
   
-  ci_im04 <- aperm(array(cbind(ci_im04_l, ci_im04_u), dim = c(neps, ndelta, 2)), 
-                   c(1, 3, 2))
-  
   if(do_rearrange) {
     
-    ci_lb <- apply(ci_lb, c(2, 3), sort, decreasing = TRUE)
-    ci_ub <- apply(ci_ub, c(2, 3), sort, decreasing = FALSE)
-    est_l <- apply(est_l, 2, sort, decreasing = TRUE)
-    est_u <- apply(est_u, 2, sort, decreasing = FALSE)
+    ci_lb <- array(apply(ci_lb, c(2, 3), sort, decreasing = TRUE),
+                   dim = c(neps, 2, ndelta))
+    ci_ub <- array(apply(ci_ub, c(2, 3), sort, decreasing = FALSE),
+                   dim = c(neps, 2, ndelta))
+    est_l <- array(apply(est_l, 2, sort, decreasing = TRUE),
+                   dim = c(neps, ndelta))
+    est_u <- array(apply(est_u, 2, sort, decreasing = FALSE),
+                   dim = c(neps, ndelta))
+    ci_im04_l <- array(apply(ci_im04_l, 2, sort, decreasing = TRUE),
+                       dim = c(neps, ndelta))
+    ci_im04_u <- array(apply(ci_im04_u, 2, sort, decreasing = FALSE),
+                       dim = c(neps, ndelta))
     
   }
   
+  ci_im04 <- aperm(array(cbind(ci_im04_l, ci_im04_u), dim = c(neps, ndelta, 2)), 
+                   c(1, 3, 2))
+
   # Return results in a user-friendly format
   temp_fn <- function(x) {
-    out <- cbind(est_l[, x], est_u[, x], ci_lb[, , x], ci_ub[, , x],
-                 ci_lb_pt[, , x], ci_ub_pt[, , x], ci_im04[, , x])
+    out1 <- array(c(est_l[, x], est_u[, x]), dim = c(neps, 2))
+    out2 <- array(c(ci_lb[, , x], ci_ub[, , x], ci_lb_pt[, , x], 
+                    ci_ub_pt[, , x], ci_im04[, , x]), dim = c(neps, 10))
+    out <- array(c(out1, out2), dim = c(neps, 12))
     return(out)
   }
   
-  res <- sapply(1:ndelta, temp_fn, simplify = "array")
+  res <- array(vapply(1:ndelta, temp_fn, 
+                      FUN.VALUE = array(0, dim = c(neps, 12))),
+               dim = c(neps, 12, ndelta))
   
-  dim2names <- c("lb", "ub", "ci_lb_lo_unif", "ci_lb_hi_unif", 
-                 "ci_ub_lo_unif", "ci_ub_hi_unif", "ci_lb_lo_pt", "ci_lb_hi_pt",
-                 "ci_ub_lo_pt", "ci_ub_hi_pt", "ci_im04_lo", "ci_im04_hi")
+  dim2names <- c("lb", "ub", "ci_lb_lo_unif", "ci_ub_hi_unif", "ci_lb_lo_pt", 
+                 "ci_lb_hi_pt", "ci_ub_lo_pt", "ci_ub_hi_pt", "ci_im04_lo", 
+                 "ci_im04_hi")
   dimnames(res) <- list(eps, dim2names, delta)
   
   out <- list(bounds = res, var_ub = var_u, var_lb = var_l,
-              eps_zero = eps_zero,  q_lb = q_l, q_ub = q_u,
+              eps_zero = eps_zero,  q_lb = qhats_lb, q_ub = qhats_ub,
               lambda_lb = lambda_l, lambda_ub = lambda_u,
-              ifvals_lb = list_lb$ifvals, ifvals_ub = list_ub$ifvals,
-              nuis_fns = nuis_fns, nuhat = nuhat, glhat = glhat, guhat = guhat, 
+              ifvals_lb = ifvals_l, ifvals_ub = ifvals_u,
+              nuis_fns = nuis_fns, nuhat = nuhat, glhat = glhat, guhat = guhat,
+              glhat_train = glhat_train, guhat_train = guhat_train, 
               tauhat_l = tauhat_lb, tauhat_u = tauhat_ub, phibar_lb = phibar_l, 
-              phibar_ub = phibar_u, mult_calpha_lb = calpha_lb,
+              phibar_ub = phibar_u, phibar_lb_fold = phibar_l_fold,
+              phibar_ub_fold = phibar_u_fold, mult_calpha_lb = calpha_lb,
               mult_calpha_ub = calpha_ub, im04_calpha = cim04)
   
   return(out)

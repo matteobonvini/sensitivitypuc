@@ -4,27 +4,22 @@
 \alias{if_tau}
 \title{Estimation of influence function for E(g(eta))}
 \usage{
-if_tau(y, a, ymin, ymax, pi0, pi1, mu0, mu1, upper = FALSE)
+if_tau(data, delta, upper = FALSE)
 }
 \arguments{
-\item{y}{nx1 vector of outcomes in [0, 1]}
+\item{data}{data.frame of dimensions n x 8, with columns: y, a, ymin, ymax, 
+pi0g (= P(A = 0 | X = x) if model "x" or 1-A if model "xa"),
+pi1g (= P(A = 1 | X = x) if model "x" or A if model "xa")
+mu1 (E(Y | A = 1, X = x)) and mu0 (E(Y | A = 0, X = x)).}
 
-\item{a}{nx1 vector of treatments}
-
-\item{pi0}{nx1 vector with estimates for P(A=0 | X=x) evaluated at each x}
-
-\item{pi1}{nx1 vector with estimates for P(A=1 | X=x) evaluated at each x}
-
-\item{mu0}{nx1 vector with estimates for E(Y |A=0, X=x) evaluated at each x}
-
-\item{mu1}{nx1 vector with estimates for E(Y |A=1, X=x) evaluated at each x}
+\item{delta}{vector of values for the delta parameter.}
 
 \item{upper}{boolean (default is upper=FALSE) if TRUE if values for 
 E(g_u(eta)) are returned, otherwise those for E(g_l(eta)) are returned}
 }
 \value{
-a length(y)x1 matrix containing the influence function values at 
-each observed X of the parameter E(g(eta)).
+a length(y)xlength(delta) matrix containing the influence function 
+values at each observed X of the parameter E(g(eta)).
 }
 \description{
 \code{if_tau} returns the influence function values for the 

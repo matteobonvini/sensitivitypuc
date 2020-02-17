@@ -33,18 +33,27 @@ test_that("Coverage of Imbens & Manski (2004) is correct", {
     mu1x <- x
     mu0x <- rep(1, n)
     pi1x <- pi0x <- rep(0.5, n)
-    nuis_fns <- matrix(NA, ncol = 4, nrow = n,
-                       dimnames = list(NULL, c("mu1", "mu0", "pi1", "pi0")))
-    nuis_fns[, "mu1"] <- mu1x
-    nuis_fns[, "mu0"] <- mu0x
-    nuis_fns[, "pi1"] <- pi1x
-    nuis_fns[, "pi0"] <- pi0x
+    nuis_fns <- matrix(NA, ncol = 7, nrow = 2 * n,
+                       dimnames = list(NULL, c("mu1", "mu0", "pi1", "pi0",
+                                               "unit_num", "fold", "is_test")))
+    nuis_fns[, "mu1"] <- rep(mu1x, 2)
+    nuis_fns[, "mu0"] <- rep(mu0x, 2)
+    nuis_fns[, "pi1"] <- rep(pi1x, 2)
+    nuis_fns[, "pi0"] <- rep(pi0x, 2)
+    
+    nuis_fns[, "unit_num"] <- rep(1:n, 2)
+    nuis_fns[, "fold"] <- 1
+    nuis_fns[, "is_test"] <- c(rep(1, n), rep(0, n))
+    
+    nuis_fns_list <- list(test = nuis_fns[1:n, ], 
+                          train = nuis_fns[(n+1):(2*n), ],
+                          order_obs = nuis_fns[1:n, "unit_num"])
     gx <- 1 - 0.5*x
     
     res <- get_bound(y = y, a = a, x = as.data.frame(x), ymin = 0, ymax = 1, 
                      outfam = NULL, treatfam = NULL, model = "x", eps = eps, 
-                     delta = 1, nsplits = NULL, do_mult_boot = FALSE,
-                     do_eps_zero = FALSE, nuis_fns = nuis_fns, alpha = alpha,
+                     delta = 1, nsplits = 1, do_mult_boot = FALSE,
+                     do_eps_zero = FALSE, nuis_fns = nuis_fns_list, alpha = alpha,
                      do_rearrange = FALSE)
     # Machine precision 
     

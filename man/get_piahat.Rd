@@ -4,9 +4,7 @@
 \alias{get_piahat}
 \title{Estimation of regression function E(A|X)}
 \usage{
-get_piahat(a, x, newx, family = binomial(), trunc_tol = 0.05,
-  sl.lib = c("SL.earth", "SL.gam", "SL.glm", "SL.mean",
-  "SL.glm.interaction", "SL.ranger"))
+get_piahat(a, x, newx, family = binomial(), trunc_tol = 0.05, sl.lib)
 }
 \arguments{
 \item{a}{nx1 vector of treatments}
@@ -17,8 +15,8 @@ get_piahat(a, x, newx, family = binomial(), trunc_tol = 0.05,
 evaluated at}
 
 \item{family}{family specifying the error distribution for treatment
-regression, currently only \code{binomial()} supported. 
-Link should not be specified.}
+regression, currently only \code{binomial()} supported. Default is 
+\code{binomial()}. Link should not be specified.}
 
 \item{trunc_tol}{amount of tolerance allowed for truncating the propensity 
 score in [tol, 1 - tol]. Default is 0.05.}
@@ -26,8 +24,13 @@ score in [tol, 1 - tol]. Default is 0.05.}
 \item{sl.lib}{character vector specifying which libraries to use for the SL.}
 }
 \value{
-A n-dimensional vectors containing estimates of E(Y|A = aval, X) 
-evaluated at newx.
+A list containing estimates of E(A|X): 
+\item{\code{testvals}}: nrow(\code{newx})-dimensional vector containing 
+estimates of regression functions (computed using points \code{x}) evaluated
+at test points \code{newx}.
+\item{\code{trainvals}}: nrow(\code{x})-dimensional vector containing 
+estimates of regression functions (computed using points \code{x}) evaluated 
+at train points \code{x}.
 }
 \description{
 \code{get_piahat} estimates the regression function E(A|X)
@@ -48,7 +51,7 @@ newx <- data.frame(x1 = rnorm(20), x2 = runif(20))
 a <- rbinom(n, 1, pnorm(x$x1))
 fits <- get_piahat(a, x, newx, family = binomial(), 
                    sl.lib = c("SL.mean", "SL.glm", "SL.gam"))
-head(fits)
+head(fits$testvals)
 
 }
 \references{
