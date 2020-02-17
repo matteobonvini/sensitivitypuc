@@ -413,14 +413,14 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib,
   # Return results in a user-friendly format
   temp_fn <- function(x) {
     out1 <- array(c(est_l[, x], est_u[, x]), dim = c(neps, 2))
-    out2 <- array(c(ci_lb[, 1 , x], ci_ub[, 2 , x], ci_lb_pt[, , x], 
+    out2 <- array(c(ci_lb[, 1, x], ci_ub[, 2 , x], ci_lb_pt[, , x], 
                     ci_ub_pt[, , x], ci_im04[, , x]), dim = c(neps, 10))
-    out <- array(c(out1, out2), dim = c(neps, 12))
+    out <- array(c(out1, out2), dim = c(neps, 10))
     return(out)
   }
   
   res <- array(vapply(1:ndelta, temp_fn, 
-                      FUN.VALUE = array(0, dim = c(neps, 12))),
+                      FUN.VALUE = array(0, dim = c(neps, 10))),
                dim = c(neps, 10, ndelta))
   
   dim2names <- c("lb", "ub", "ci_lb_lo_unif", "ci_ub_hi_unif", "ci_lb_lo_pt", 
