@@ -84,7 +84,7 @@ get_muahat <- function(y, a, x, newx, aval, ymin, ymax, family = gaussian(),
   
   testvals[which(testvals < ymin)] <- ymin
   testvals[which(testvals > ymax)] <- ymax
-  testvals[which(trainvals < ymin)] <- ymin
+  trainvals[which(trainvals < ymin)] <- ymin
   trainvals[which(trainvals > ymax)] <- ymax
   
   out <- list(testvals = testvals, trainvals = trainvals)
