@@ -287,8 +287,6 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib,
     
     tauhat_lb <- glhat
     tauhat_ub <- guhat
-    
-    print(dim(glhat[[1]]))
 
   }
   
