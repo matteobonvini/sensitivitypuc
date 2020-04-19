@@ -258,9 +258,9 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib,
   max_gl <- apply(gl, 2, max)
   max_gu <- apply(gu, 2, max)
   
-  glhat <- by(gl, folds_test, identity, simplify = FALSE)
-  guhat <- by(gu, folds_test, identity, simplify = FALSE)
-  
+  glhat <- by(gl, folds_test, function(x)  { as.matrix(x) }, simplify = FALSE)
+  guhat <- by(gu, folds_test, function(x)  { as.matrix(x) }, simplify = FALSE)
+
   datg_train <- data.frame(ymin = ymin, ymax = ymax, pi0g = pi0g_train, 
                            pi1g = pi1g_train, mu0 = mu0hat_train, 
                            mu1 = mu1hat_train)
@@ -282,12 +282,14 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib,
                     simplify = FALSE)
     tauhat_ub <- by(dat_tau, folds_test, if_tau, delta = delta, upper = TRUE, 
                     simplify = FALSE)
-    
+
   } else {
     
     tauhat_lb <- glhat
     tauhat_ub <- guhat
     
+    print(dim(glhat[[1]]))
+
   }
   
   list_lb <- get_ifvals(n = n, neps = neps, ndelta = ndelta, upper = FALSE, 
