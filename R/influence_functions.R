@@ -82,6 +82,7 @@ get_ifvals <- function(n, neps, ndelta, upper, nu, tau, g, nsplits, quant,
   lambda <- mapply(.get_lambda_wrapper, g, quant, nobs_fold,
                    MoreArgs = list(upper = upper, multiply_by_q = FALSE),
                    SIMPLIFY = FALSE)
+  # print(sum(lambda[[9]]))
   lambdaq <- mapply(.get_lambda_wrapper, g, quant, nobs_fold,
                     MoreArgs = list(upper = upper, multiply_by_q = TRUE),
                     SIMPLIFY = FALSE)
@@ -249,8 +250,8 @@ get_g <- function(data, delta, upper) {
 get_quant_g <- function(g, eps, min_g, max_g) {
   # Given a function g of dim n x length(delta), it computes the eps-quantiles
   # for each column (i.e. each value of delta). 
-  out <- as.matrix(apply(g[, , drop = FALSE], 2, quantile, p = eps, 
-                         names = FALSE))
+  out <- matrix(apply(g[, , drop = FALSE], 2, quantile, p = eps, 
+                      names = FALSE), nrow = length(eps), ncol = ncol(g))
   out[which(eps == 0), ] <- min_g - 1e-10
   out[which(eps == 1), ] <- max_g
   return(out)
