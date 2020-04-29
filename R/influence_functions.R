@@ -30,7 +30,7 @@
 #' \item{ifvals}{a n x length(eps) x length(delta) array containing 
 #' the influence functions (varphi_l or varphi_u in manuscript) evaluated at 
 #' the observed X as a function of epsilon and delta;}
-#' \item{\code{lambda}{a list of size \code{nsplits}, where element j
+#' \item{lambda}{a list of size \code{nsplits}, where element j
 #' contains a nxlength(eps)xlength(delta) array containing 
 #' the indicator ghatmat <= q (if \code{upper = FALSE}) or
 #' ghatmat > q (if \code{upper = TRUE}), where q is eps-quantile or 1-eps 

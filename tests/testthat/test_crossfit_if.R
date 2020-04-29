@@ -143,7 +143,7 @@ test_that("Cross-fitting is correct", {
         expect_true(sum(abs(unlist(glt) - glt_pckg)) < 1e-15)
         expect_true(sum(abs(unlist(gut) - unlist(glt) - (ymax - ymin))) < 1e-10)
         
-        nu_pckg <- est$nuhat
+        nu_pckg <- unlist(est$nuhat)
         expect_true(sum(abs(nu[order(s), ] - nu_pckg)) < 1e-12)
         
         tauu_pckg <- abind::abind(est$tauhat_u, along = 1)

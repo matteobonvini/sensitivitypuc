@@ -35,6 +35,25 @@ using all obs except those in fold j and evaluated at obs in fold j.}
 \item{delta}{vector of delta values. \code{length}(delta) should match 
 \code{ncol(ghatmat)}.}
 }
+\value{
+A list containing:
+\item{ifvals}{a n x length(eps) x length(delta) array containing 
+the influence functions (varphi_l or varphi_u in manuscript) evaluated at 
+the observed X as a function of epsilon and delta;}
+\item{lambda}{a list of size \code{nsplits}, where element j
+contains a nxlength(eps)xlength(delta) array containing 
+the indicator ghatmat <= q (if \code{upper = FALSE}) or
+ghatmat > q (if \code{upper = TRUE}), where q is eps-quantile or 1-eps 
+quantile of ghatmat and, computed using regression functions
+estimated using all folds but j and evaluated using obs at fold j.}
+\item{quant}{a list of size \code{nsplits}, where element j is a
+(num eps) x (num delta) matrix containing estimates of eps-quantile 
+(if \code{upper = FALSE}) or (1-eps) quantiles (if \code{upper = TRUE}) of 
+\code{ghatmat}, where the regression functions are computed and evaluated 
+using all obs except those in fold j. See \code{\link{get_quant_g}}.}
+\item{lambdaq}{a list of size \code{nsplits} containing the product 
+\code{lambda} * \code{quant}.}
+}
 \description{
 \code{get_ifvals} is the main function for getting the influence 
 function values used to construct the estimator of either the lower and upper 
