@@ -400,9 +400,9 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib,
                    dim = c(neps, ndelta))
     est_u <- array(apply(est_u, 2, sort, decreasing = FALSE),
                    dim = c(neps, ndelta))
-    ci_im04_l <- array(apply(ci_im04_l, 2, sort, decreasing = TRUE),
+    ci_im04_l <- array(apply(ci_im04_l, c(2, 3), sort, decreasing = TRUE),
                        dim = c(neps, ndelta))
-    ci_im04_u <- array(apply(ci_im04_u, 2, sort, decreasing = FALSE),
+    ci_im04_u <- array(apply(ci_im04_u, c(2, 3), sort, decreasing = FALSE),
                        dim = c(neps, ndelta))
     
   }
@@ -414,7 +414,7 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib,
   temp_fn <- function(x) {
     out1 <- array(c(est_l[, x], est_u[, x]), dim = c(neps, 2))
     out2 <- array(c(ci_lb[, 1, x], ci_ub[, 2 , x], ci_lb_pt[, , x], 
-                    ci_ub_pt[, , x], ci_im04[, , x]), dim = c(neps, 10))
+                    ci_ub_pt[, , x], ci_im04[, , x]), dim = c(neps, 8))
     out <- array(c(out1, out2), dim = c(neps, 10))
     return(out)
   }
