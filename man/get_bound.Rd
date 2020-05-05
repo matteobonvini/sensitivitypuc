@@ -99,10 +99,12 @@ delta, estimate of eps0, max(0, ci_lo), min(1, ci_hi), variance of estimate
 of eps0.}
 \item{\code{q_lb}}{a list of size \code{nsplits}, where element j is a
 (num eps) x (num delta) matrix containing estimates of eps-quantile of 
-g(etab) for lower bound computed using all obs except those in fold j}.
+g(etab) for lower bound, where g(etab) is computed without using obs from
+fold j}.
 \item{\code{q_ub}}{a list of size \code{nsplits}, where element j is a
 (num eps) x (num delta) matrix containing estimates of eps-quantile of 
-g(etab) for upper bound computed using all obs except those in fold j}.
+g(etab) for upper bound, where g(etab) is computed without using obs from
+fold j}.
 \item{\code{lambda_lb}}{a list of size \code{nsplits}, where element j
 contains a nxlength(eps)xlength(delta) array containing 
 the indicator ghatmat <= q, where q is eps-quantile of ghatmat and 

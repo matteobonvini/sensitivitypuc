@@ -262,6 +262,14 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib,
   
   glhat <- by(gl, folds_test, function(x)  { as.matrix(x) }, simplify = FALSE)
   guhat <- by(gu, folds_test, function(x)  { as.matrix(x) }, simplify = FALSE)
+
+  datg_train <- data.frame(ymin = ymin, ymax = ymax, pi0g = pi0g_train, 
+                           pi1g = pi1g_train, mu0 = mu0hat_train, 
+                           mu1 = mu1hat_train)
+  glhat_train <- by(datg_train, folds_train, get_g, delta = delta, upper = FALSE,
+                    simplify = FALSE)
+  guhat_train <- by(datg_train, folds_train, get_g, delta = delta, upper = TRUE,
+                    simplify = FALSE)
   
   qhats_lb <- lapply(glhat, get_quant_g, eps = eps, min_g = min_gl,
                      max_g = max_gl)
