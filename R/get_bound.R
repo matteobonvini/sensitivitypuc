@@ -69,10 +69,12 @@
 #' of eps0.}
 #' \item{\code{q_lb}}{a list of size \code{nsplits}, where element j is a
 #' (num eps) x (num delta) matrix containing estimates of eps-quantile of 
-#' g(etab) for lower bound computed using all obs except those in fold j}.
+#' g(etab) for lower bound, where g(etab) is computed without using obs from
+#' fold j}.
 #' \item{\code{q_ub}}{a list of size \code{nsplits}, where element j is a
 #' (num eps) x (num delta) matrix containing estimates of eps-quantile of 
-#' g(etab) for upper bound computed using all obs except those in fold j}.
+#' g(etab) for upper bound, where g(etab) is computed without using obs from
+#' fold j}.
 #' \item{\code{lambda_lb}}{a list of size \code{nsplits}, where element j
 #' contains a nxlength(eps)xlength(delta) array containing 
 #' the indicator ghatmat <= q, where q is eps-quantile of ghatmat and 
@@ -260,18 +262,10 @@ get_bound <- function(y, a, x, ymin, ymax, outfam, treatfam, sl.lib,
   
   glhat <- by(gl, folds_test, function(x)  { as.matrix(x) }, simplify = FALSE)
   guhat <- by(gu, folds_test, function(x)  { as.matrix(x) }, simplify = FALSE)
-
-  datg_train <- data.frame(ymin = ymin, ymax = ymax, pi0g = pi0g_train, 
-                           pi1g = pi1g_train, mu0 = mu0hat_train, 
-                           mu1 = mu1hat_train)
-  glhat_train <- by(datg_train, folds_train, get_g, delta = delta, upper = FALSE,
-                    simplify = FALSE)
-  guhat_train <- by(datg_train, folds_train, get_g, delta = delta, upper = TRUE,
-                    simplify = FALSE)
   
-  qhats_lb <- lapply(glhat_train, get_quant_g, eps = eps, min_g = min_gl,
+  qhats_lb <- lapply(glhat, get_quant_g, eps = eps, min_g = min_gl,
                      max_g = max_gl)
-  qhats_ub <- lapply(guhat_train, get_quant_g, eps = 1 - eps, min_g = min_gu,
+  qhats_ub <- lapply(guhat, get_quant_g, eps = 1 - eps, min_g = min_gu,
                      max_g = max_gu)
   
   if(!plugin) {
