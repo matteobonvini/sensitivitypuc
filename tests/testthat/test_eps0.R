@@ -173,7 +173,7 @@ test_that("coverage eps0 is correct when using sample splitting", {
   quants <- get_quant(eps_seq)
   lbvals <- lb(eps_seq)
   ubvals <- ub(eps_seq)
-  eps0 <- eps_seq[which.min(abs(lbvals * ubvals))]
+  eps0_true <- eps_seq[which.min(abs(lbvals * ubvals))]
 
   # Start simulation to check coverage
   nsim <- 1000
@@ -202,8 +202,8 @@ test_that("coverage eps0 is correct when using sample splitting", {
     nu <- (2 * a - 1) * (y - muax) / piax + mu1x - mu0x
     tau <- (1 - 2 * a) * (y - muax) / piax * (1 - piax) + a * (mu0x - ymin) + 
       (1 - a) * (ymax - mu1x)
-    qeps0u <- get_quant(1 - eps0)
-    psil0 <- lb(eps0)
+    qeps0u <- get_quant(1 - eps0_true)
+    psil0 <- lb(eps0_true)
     tildephi0 <- nu + (tau - qeps0u) * I(gx > qeps0u)
     var_eps0 <- var( (tildephi0 * psil0 ) / (psil0 * qeps0u)) / n
     
@@ -223,7 +223,7 @@ test_that("coverage eps0 is correct when using sample splitting", {
   }
   # Simulation begins
   sims <- pbreplicate(nsim, sim_fn())
-  check_result(sims, eps0, alpha)
+  check_result(sims, eps0_true, alpha)
 
 })
  
@@ -232,11 +232,11 @@ test_that("coverage eps0 is correct using simulation from paper", {
   source("simulation_true_regression_functions.R")
   ## Load true values ##
   truth <- readRDS("./data/truth_simulation.RData")
-  n <- 10000
+  n <- 20000
   eps <- attributes(truth)$eps0_seq
   alpha <- 0.30
   nsim <- 1000
-  nsplits <- 10
+  nsplits <- 3
   sim_fn <- function() {
 
     df <- gen_data(n)
@@ -320,3 +320,4 @@ test_that("coverage eps0 is correct using simulation from paper", {
   sims <- pbreplicate(nsim, sim_fn())
   check_result(sims, eps0_true = truth[1, "eps_zero"], alpha)
 })
+

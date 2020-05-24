@@ -73,8 +73,8 @@ test_that("Cross-fitting is correct", {
           gut[[k]] <- pi0t[[k]] * (ymax - mu1t[[k]]) - pi1t[[k]] * (ymin - mu0t[[k]])
           glt[[k]] <- pi0t[[k]] * (ymin - mu1t[[k]]) - pi1t[[k]] * (ymax - mu0t[[k]])
           
-          qu[[k]] <- quantile(gut[[k]], p = 1 - ee)
-          ql[[k]] <- quantile(glt[[k]], p = ee)
+          qu[[k]] <- quantile(gu[test, ], p = 1 - ee)
+          ql[[k]] <- quantile(gl[test, ], p = ee)
           
           nu[test, ] <- a[test] / pi1[test] * (y[test] - mu1[test]) - 
             (1 - a[test]) / pi0[test] * (y[test] - mu0[test]) +

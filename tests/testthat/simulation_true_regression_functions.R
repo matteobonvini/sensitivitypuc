@@ -63,6 +63,10 @@ mu1x <- function(x1, x2) {
 gx <- function(x1, x2) {
   return((1-pix(x1))*(1-mu1x(x1, x2)) + pix(x1)*mu0x(x1, x2))
 }
+# g(eta) for XA-model, uses worst-case delta = 1 
+gxa <- function(x1, x2, a) {
+  return((1 - a) * (1 - mu1x(x1, x2)) + a * mu0x(x1, x2))
+}
 
 # Function to generate data
 gen_data <- function(n) {
@@ -77,7 +81,7 @@ gen_data <- function(n) {
   a <- rbinom(n, 1, pi_xus(x1, u, s))
   y0 <- rbinom(n, 1, expect_y0(x1, x2, u))
   y1 <- rbinom(n, 1, expect_y1(x1, x2, u))
-  y <- (1-a) * y0 + a * y1
+  y <- (1 - a) * y0 + a * y1
   
   return(data.frame(y=y, a=a, x1=x1, x2=x2, u=u, s=s))
 }
