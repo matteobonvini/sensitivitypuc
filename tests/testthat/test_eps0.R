@@ -43,8 +43,8 @@ test_that("coverage eps0 is correct", {
   eps0_true <- 0.5*(4 - sqrt(8))
 
   # Start simulation to check coverage
-  nsim <- 500
-  n <- 10000
+  nsim <- 1000
+  n <- 5000
   alpha <- 0.5
 
   sim_fn <- function() {
@@ -169,17 +169,17 @@ test_that("coverage eps0 is correct when using sample splitting", {
     }, lower = ming, upper = maxg, abs.tol = 1e-15)$value
   })
   
-  eps_seq <- seq(0.3, 0.4, 0.0001)
+  eps_seq <- seq(0.3, 0.4, 0.00001)
   quants <- get_quant(eps_seq)
   lbvals <- lb(eps_seq)
   ubvals <- ub(eps_seq)
   eps0_true <- eps_seq[which.min(abs(lbvals * ubvals))]
 
   # Start simulation to check coverage
-  nsim <- 1000
+  nsim <- 500
   n <- 5000
   alpha <- 0.2
-  nsplits <- 6
+  nsplits <- 3
 
   sim_fn <- function() {
     # Simulation function to estimate eps0
@@ -209,10 +209,10 @@ test_that("coverage eps0 is correct when using sample splitting", {
     
     tmp <- get_bound(y = y, a = a, x = as.data.frame(x), ymin = ymin, ymax = ymax,
                      outfam = gaussian(), treatfam = binomial(), model = "x",
-                     eps = eps_seq, delta = 1, nsplits = nsplits, 
+                     eps = seq(0.3, 0.4, 0.001), delta = 1, nsplits = nsplits, 
                      sl.lib = c("SL.mean", "SL.glm"), alpha = alpha, 
                      do_mult_boot = FALSE, do_eps_zero = TRUE, nuis_fns = NULL, 
-                     do_rearrange = TRUE)
+                     do_rearrange = FALSE)
 
     tmp0 <- tmp$eps_zero
     out <- c(tmp0$est, tmp0$ci_lo, tmp0$ci_hi, tmp0$var_eps0, var_eps0)
@@ -232,10 +232,17 @@ test_that("coverage eps0 is correct using simulation from paper", {
   source("simulation_true_regression_functions.R")
   ## Load true values ##
   truth <- readRDS("./data/truth_simulation.RData")
-  n <- 20000
-  eps <- attributes(truth)$eps0_seq
-  alpha <- 0.30
-  nsim <- 1000
+  
+  psiu0 <- truth[1, "ub0"]
+  psil0 <- truth[1, "lb0"]
+  ql0 <- truth[1, "ql0"]
+  qu0 <- truth[1, "qu0"]
+  eps0_true <- truth[1, "eps_zero"]
+  der <- psiu0 * ql0
+  
+  n <- 5000
+  alpha <- 0.3
+  nsim <- 2000
   nsplits <- 3
   sim_fn <- function() {
 
@@ -297,14 +304,9 @@ test_that("coverage eps0 is correct using simulation from paper", {
     gux <- pi0hat * (1 - mu1hat) + pi1hat * mu0hat
     glx <- gux - 1
 
-    psiu0 <- truth[1, "ub0"]
-    psil0 <- truth[1, "lb0"]
-    ql0 <- truth[1, "ql0"]
-    qu0 <- truth[1, "qu0"]
-    eps0 <- truth[1, "eps_zero"]
-    der <- psiu0 * ql0
-    var_eps0 <- var(psiu0 * (nu + I(glx <= ql0) * (tau - ql0) - eps0) / der) / n
-
+    var_eps0 <- var(psiu0 * (nu + I(glx <= ql0) * (tau - ql0) - eps0_true) / der) / n
+    
+    eps <- attr(truth, "eps0_seq")
     tmp <- get_bound(y = y, a = a, x = x, ymin = 0, ymax = 1, outfam = NULL,
                      treatfam = NULL, model = "x", eps = eps, delta = 1,
                      nsplits = nsplits, do_mult_boot = FALSE, B = NULL,
@@ -318,6 +320,6 @@ test_that("coverage eps0 is correct using simulation from paper", {
   }
 
   sims <- pbreplicate(nsim, sim_fn())
-  check_result(sims, eps0_true = truth[1, "eps_zero"], alpha)
+  check_result(sims, eps0_true, alpha)
 })
 

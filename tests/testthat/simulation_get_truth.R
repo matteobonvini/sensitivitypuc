@@ -15,7 +15,7 @@ source("simulation_true_regression_functions.R")
 # For the simulation it's important that eps_seq is a subset of eps0_seq
 # this saves computational time. See simulation.R file.
 eps_seq <- seq(0, 0.2, 0.01)
-eps0_seq <- seq(0, 0.2, 0.001)
+eps0_seq <- seq(0, 0.2, 0.0001)
 
 nsim <- 500
 col_names <- c("eps", "lb", "ub", "eps_zero", "ql0", "qu0", "lb0", "ub0")
@@ -66,10 +66,10 @@ out <- apply(res, c(1, 2), mean)
 # Sanity check that the variance of the results across simulations is not large
 sds <- apply(res, c(1, 2), sd) / sqrt(nsim)
 
-attr(out, "tau") <- tau
+attr(out, "tau") <- effect
 attr(out, "pi") <- pi1
 attr(out, "mu0") <- mu0
 attr(out, "mu1") <- mu1
-attr(out, "eps0_seq") <- eps0_seq
+attr(out, "eps0_seq") <- seq(0, 0.2, 0.001)
 attr(out, "eps_seq") <- eps_seq
 saveRDS(out, file = "./data/truth_simulation.RData")
