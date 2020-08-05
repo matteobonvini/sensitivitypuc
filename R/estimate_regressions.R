@@ -148,7 +148,7 @@ get_piahat <- function(a, x, newx, family = binomial(), trunc_tol = 0.05,
   if(inherits(tryfit, "try-error")) {
     
     message("SuperLearner throws this error for estimating pi:")
-    message(tryit[1])
+    message(tryfit[1])
     message(paste("I will use a GLM instead! Consider fitting nuisance", 
                   "regression functions separately and then pass them as",
                   "arg to get_bound()"))
