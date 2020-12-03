@@ -25,12 +25,12 @@ score in [tol, 1 - tol]. Default is 0.05.}
 }
 \value{
 A list containing estimates of E(A|X): 
-\item{\code{testvals}}: nrow(\code{newx})-dimensional vector containing 
+\item{\code{testvals}}{nrow(\code{newx})-dimensional vector containing 
 estimates of regression functions (computed using points \code{x}) evaluated
-at test points \code{newx}.
-\item{\code{trainvals}}: nrow(\code{x})-dimensional vector containing 
+at test points \code{newx}.}
+\item{\code{trainvals}}{nrow(\code{x})-dimensional vector containing 
 estimates of regression functions (computed using points \code{x}) evaluated 
-at train points \code{x}.
+at train points \code{x}.}
 }
 \description{
 \code{get_piahat} estimates the regression function E(A|X)

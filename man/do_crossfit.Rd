@@ -4,9 +4,20 @@
 \alias{do_crossfit}
 \title{Estimation of regression functions using cross-fitting}
 \usage{
-do_crossfit(y, a, x, ymin, ymax, nsplits, sl.lib, outfam = gaussian(),
-  treatfam = binomial(), show_progress = FALSE, do_parallel = FALSE,
-  ncluster = NULL)
+do_crossfit(
+  y,
+  a,
+  x,
+  ymin,
+  ymax,
+  nsplits,
+  sl.lib,
+  outfam = gaussian(),
+  treatfam = binomial(),
+  show_progress = FALSE,
+  do_parallel = FALSE,
+  ncluster = NULL
+)
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1]}

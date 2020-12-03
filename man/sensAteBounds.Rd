@@ -3,10 +3,5 @@
 \docType{package}
 \name{sensAteBounds}
 \alias{sensAteBounds}
-\alias{sensAteBounds-package}
 \title{echseffects: A package to perform sensitivity analysis via the proportion of 
 unmeasured confounding.}
-\description{
-echseffects: A package to perform sensitivity analysis via the proportion of 
-unmeasured confounding.
-}

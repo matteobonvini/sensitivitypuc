@@ -5,8 +5,7 @@
 \title{Multiplier bootstrap to construct uniform confidence bands around
 the curves tracing the bounds on ATE.}
 \usage{
-do_multboot(n, ndelta, psihat, sigmahat, ifvals, alpha = 0.05,
-  B = 10000)
+do_multboot(n, ndelta, psihat, sigmahat, ifvals, alpha = 0.05, B = 10000)
 }
 \arguments{
 \item{n}{sample size.}

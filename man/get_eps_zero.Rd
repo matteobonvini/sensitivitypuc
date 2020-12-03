@@ -5,8 +5,19 @@
 \title{Estimation of the minimum proportion of confounded units such that
 the bounds on the average treatment effect contain zero (eps0)}
 \usage{
-get_eps_zero(n, eps, pt_est, lb, ub, ql, qu, ifvals_lb, ifvals_ub,
-  delta = 1, alpha = 0.05)
+get_eps_zero(
+  n,
+  eps,
+  pt_est,
+  lb,
+  ub,
+  ql,
+  qu,
+  ifvals_lb,
+  ifvals_ub,
+  delta = 1,
+  alpha = 0.05
+)
 }
 \arguments{
 \item{n}{sample size.}

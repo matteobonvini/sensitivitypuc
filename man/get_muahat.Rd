@@ -37,7 +37,7 @@ estimates of regression functions (computed using points \code{x}) evaluated
 at test points \code{newx}.}
 \item{\code{trainvals}}{nrow(\code{x})-dimensional vector containing 
 estimates of regression functions (computed using points \code{x}) evaluated 
-at train points \code{x}}
+at train points \code{x}.}
 }
 \description{
 \code{get_muahat} estimates the regression function 

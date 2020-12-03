@@ -5,11 +5,30 @@
 \title{Estimation of bounds on ATE as a function of the proportion of 
 unmeasured confounding.}
 \usage{
-get_bound(y, a, x, ymin, ymax, outfam, treatfam, sl.lib, model = "x",
-  eps = 0, delta = 0, nsplits = 5, do_mult_boot = TRUE,
-  do_eps_zero = TRUE, alpha = 0.05, B = 10000, nuis_fns = NULL,
-  plugin = FALSE, do_rearrange = FALSE, do_parallel = FALSE,
-  ncluster = NULL, show_progress = FALSE)
+get_bound(
+  y,
+  a,
+  x,
+  ymin,
+  ymax,
+  outfam,
+  treatfam,
+  sl.lib,
+  model = "x",
+  eps = 0,
+  delta = 0,
+  nsplits = 5,
+  do_mult_boot = TRUE,
+  do_eps_zero = TRUE,
+  alpha = 0.05,
+  B = 10000,
+  nuis_fns = NULL,
+  plugin = FALSE,
+  do_rearrange = FALSE,
+  do_parallel = FALSE,
+  ncluster = NULL,
+  show_progress = FALSE
+)
 }
 \arguments{
 \item{y}{nx1 outcome vector in [0, 1].}
