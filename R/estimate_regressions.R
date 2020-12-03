@@ -30,7 +30,7 @@
 #' at test points \code{newx}.}
 #' \item{\code{trainvals}}{nrow(\code{x})-dimensional vector containing 
 #' estimates of regression functions (computed using points \code{x}) evaluated 
-#' at train points \code{x}}
+#' at train points \code{x}.}
 #' 
 #' @examples 
 #' n <- 500
